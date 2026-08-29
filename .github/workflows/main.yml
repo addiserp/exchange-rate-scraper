@@ -1,0 +1,75 @@
+name: Update exchange rates
+
+# GitHub's servers CAN run a headless browser (your shared host can't),
+# so this workflow does the actual scraping and pushes the result to
+# your site's api/upload-rates.php endpoint over plain HTTPS.
+#
+# ONE-TIME SETUP — see DEPLOY-README.md for the full walkthrough:
+#   1. Push this repo to GitHub.
+#   2. On the server: copy config/upload-token.example.php to
+#      config/upload-token.php, put a real random token in it, upload
+#      it via FTP/SFTP (it's gitignored, so it won't come from here).
+#   3. In GitHub: Settings → Secrets and variables → Actions, add:
+#        RATES_UPLOAD_URL   = https://www.yourdomain.com/api/upload-rates.php
+#        RATES_UPLOAD_TOKEN = <same random token as step 2>
+#   4. (Optional) Adjust the cron schedule below — see the note about
+#      Actions minutes if this is a private repository.
+
+on:
+  schedule:
+    # Every 30 minutes. If this repo is PRIVATE, mind your free
+    # Actions-minutes budget (2,000 min/month as of when this was
+    # written) — this job takes roughly 5-7 minutes per run (installing
+    # Chromium + visiting ~20 bank pages with a wait on each), so every
+    # 30 min is about 250-350 min/day — that alone can exceed the free
+    # tier within the month. If the repo is PUBLIC, Actions minutes are
+    # unlimited, so a tighter schedule is fine. When in doubt, widen
+    # this to every 1-3 hours ('0 */2 * * *' etc).
+    - cron: '*/30 * * * *'
+  workflow_dispatch: {} # lets you trigger a run manually from the Actions tab, useful for testing
+
+jobs:
+  scrape-and-upload:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install scraper dependencies
+        run: |
+          pip install -r scripts/requirements.txt
+          python -m playwright install --with-deps chromium
+
+      - name: Run the scraper
+        run: python scripts/scrape_rates.py
+
+      - name: Upload the fresh rates to the live site
+        env:
+          RATES_UPLOAD_URL: ${{ secrets.RATES_UPLOAD_URL }}
+          RATES_UPLOAD_TOKEN: ${{ secrets.RATES_UPLOAD_TOKEN }}
+        run: |
+          if [ -z "$RATES_UPLOAD_URL" ] || [ -z "$RATES_UPLOAD_TOKEN" ]; then
+            echo "::error::RATES_UPLOAD_URL and/or RATES_UPLOAD_TOKEN secrets are not set. See DEPLOY-README.md."
+            exit 1
+          fi
+
+          http_code=$(curl -sS -o /tmp/upload-response.json -w '%{http_code}' \
+            -X POST "$RATES_UPLOAD_URL" \
+            -H "Authorization: Bearer $RATES_UPLOAD_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data-binary @data/exchange-rates-cache.json)
+
+          echo "Response ($http_code):"
+          cat /tmp/upload-response.json
+          echo
+
+          if [ "$http_code" -ge 300 ]; then
+            echo "::error::Upload failed with HTTP $http_code"
+            exit 1
+          fi
