@@ -1,0 +1,30 @@
+# OS / editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# PHP / web cache
+vendor/
+composer.lock
+
+# Environment/config secrets
+.env
+.env.*
+config/*.php
+!config/upload-token.example.php
+
+# Logs / runtime
+*.log
+cache/
+/tmp/
+
+# Node / package tools (if used later)
+node_modules/
+package-lock.json
+
+# Python virtual environment
+.venv/
+venv/
+__pycache__/
+*.pyc

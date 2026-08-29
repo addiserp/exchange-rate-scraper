@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ethiopian Bank Exchange Rates (Live) | AddisERP Solution PLC</title>
+<meta name="description" content="Live USD and EUR buy/sell exchange rates from Ethiopian banks, fetched fresh on every page load. A free tool from AddisERP Solution PLC.">
+<meta name="keywords" content="Ethiopia exchange rate, USD to ETB, EUR to ETB, bank exchange rate Ethiopia, Commercial Bank of Ethiopia exchange rate, Dashen Bank exchange rate, Bank of Abyssinia exchange rate">
+<link rel="canonical" href="https://www.addiserp.com/exchange-rate.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Ethiopian Bank Exchange Rates (Live) | AddisERP Solution PLC">
+<meta property="og:description" content="Live USD and EUR buy/sell exchange rates from Ethiopian banks, fetched fresh on every page load.">
+<meta property="og:image" content="https://www.addiserp.com/assets/img/favicon-512.png">
+<meta property="og:url" content="https://www.addiserp.com/exchange-rate.html">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Ethiopian Bank Exchange Rates (Live) | AddisERP Solution PLC">
+<meta name="twitter:description" content="Live USD and EUR buy/sell exchange rates from Ethiopian banks, fetched fresh on every page load.">
+<link rel="icon" href="assets/img/favicon-32.png" sizes="32x32">
+<link rel="icon" href="assets/img/favicon-48.png" sizes="48x48">
+<link rel="apple-touch-icon" href="assets/img/favicon-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/main.css">
+<style>
+  /* Page-specific additions — kept inline so main.css stays untouched */
+  .rate-bar{
+    display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:14px;
+    background:var(--panel); border:1px solid var(--line); border-radius:6px;
+    padding:16px 20px; margin-bottom:22px;
+  }
+  .rate-bar .meta{ display:flex; flex-direction:column; gap:2px; }
+  .rate-bar .updated{ font-family:var(--mono); font-size:.8rem; color:var(--charcoal); }
+  .rate-bar .live-count{ font-family:var(--mono); font-size:.72rem; color:var(--green); }
+  .rate-bar .status-msg{ font-size:.78rem; color:var(--slate); }
+  .btn-refresh{
+    display:inline-flex; align-items:center; gap:8px; background:var(--ink); color:#fff;
+    padding:10px 18px; border-radius:var(--radius); font-weight:600; font-size:.86rem;
+    border:0; cursor:pointer; transition:background .15s ease;
+  }
+  .btn-refresh:hover{ background:var(--green); }
+  table.rates th, table.rates td{ font-family:var(--mono); }
+  table.rates th:first-child, table.rates td:first-child{ font-family:var(--body); font-weight:500; }
+  table.rates td.num{ text-align:right; font-variant-numeric:tabular-nums; }
+  table.rates th.num{ text-align:right; }
+  .curr-group{ text-align:center; font-family:var(--mono); font-size:.68rem; text-transform:uppercase; letter-spacing:.08em; color:var(--slate); background:#EFEAE0; }
+  .disclaimer{
+    font-size:.82rem; color:var(--slate); background:#FBF3E4; border:1px solid var(--line);
+    border-radius:6px; padding:16px 20px; margin-top:18px;
+  }
+  .disclaimer strong{ color:var(--charcoal); }
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <nav class="nav">
+    <a href="index.html" class="brand">
+      <img src="assets/img/logo.png" alt="AddisERP Solution PLC logo" class="mark">
+      <span>AddisERP<small>Solution PLC</small></span>
+    </a>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="services.html">Packages</a></li>
+      <li><a href="clients.html">Clients</a></li>
+      <li><a href="case-studies.html">Case Studies</a></li>
+      <li><a href="exchange-rate.html">Exchange Rates</a></li>
+      <li><a href="about.html">About</a></li>
+      <li><a href="contact.html" class="nav-cta">Get a Quote</a></li>
+    </ul>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </nav>
+</header>
+
+<section class="page-hero">
+  <div class="container">
+    <div class="breadcrumb"><a href="index.html">Home</a> / Exchange Rates</div>
+    <div class="eyebrow on-dark">Free tool</div>
+    <h1>Ethiopian bank exchange rates, live.</h1>
+    <p>USD and EUR buy/sell rates pulled fresh from each bank's own website every time this page loads. Built and maintained by AddisERP — the same team that builds the Odoo systems behind the numbers.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+
+    <div class="rate-bar">
+      <div class="meta">
+        <span class="updated" id="rate-updated">Loading…</span>
+        <span class="live-count" id="rate-live-count"></span>
+        <span class="status-msg" id="rate-status"></span>
+      </div>
+      <button class="btn-refresh" id="rate-refresh" type="button">↻ Refresh now</button>
+    </div>
+
+    <div class="table-wrap" data-reveal>
+      <table class="rates">
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom;">Bank</th>
+            <th colspan="2" class="curr-group">USD / ETB</th>
+            <th colspan="2" class="curr-group">EUR / ETB</th>
+            <th rowspan="2" style="vertical-align:bottom;">Status</th>
+            <th rowspan="2" style="vertical-align:bottom;">Source</th>
+          </tr>
+          <tr>
+            <th class="num">Buy</th>
+            <th class="num">Sell</th>
+            <th class="num">Buy</th>
+            <th class="num">Sell</th>
+          </tr>
+        </thead>
+        <tbody id="rate-tbody">
+          <tr><td colspan="7" style="text-align:center;color:var(--slate);padding:34px 18px;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="disclaimer">
+      <strong>How this works:</strong> most Ethiopian bank sites load their rates with JavaScript a few seconds after the page itself finishes loading, so a background script periodically opens each bank's page in a real (headless) browser, waits for the numbers to appear, and saves them here — that's what actually keeps this table current. "Refresh now" additionally re-checks, instantly, the few banks whose sites show a rate without needing that wait; it never overwrites a good number with "Unavailable" for the rest. Any bank marked <em>Unavailable</em> has a direct link so you can check it on their own site. <strong>These figures are informational only</strong> — always confirm the exact rate with the bank before making a transaction.
+    </div>
+
+  </div>
+</section>
+
+<section class="bg-panel">
+  <div class="container">
+    <div class="cta-band" data-reveal>
+      <div>
+        <h3>Need this kind of live data inside your own systems?</h3>
+        <p>We integrate exchange rates, Chapa/Telebirr payments and bank feeds directly into Odoo for finance teams that need it in one place.</p>
+      </div>
+      <a href="contact.html" class="btn btn-gold">Talk to us</a>
+    </div>
+  </div>
+</section>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a href="index.html" class="brand" style="color:#fff; margin-bottom:14px; display:flex;">
+          <img src="assets/img/logo.png" alt="AddisERP Solution PLC logo" class="mark"><span>AddisERP</span>
+        </a>
+        <p>Odoo ERP implementation and support for Ethiopian businesses — HRM, Payroll, Attendance, Sales, Purchase and Inventory, with Chapa and Telebirr payments built in.</p>
+      </div>
+      <div>
+        <h5>Site</h5>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="services.html">Packages</a></li>
+          <li><a href="clients.html">Clients</a></li>
+          <li><a href="case-studies.html">Case Studies</a></li>
+          <li><a href="exchange-rate.html">Exchange Rates</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Packages</h5>
+        <ul>
+          <li><a href="services.html#hrm">HRM · Attendance · Payroll</a></li>
+          <li><a href="services.html#retail">Sales · Purchase · Inventory</a></li>
+          <li><a href="services.html#payments">Payment integration</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>Contact</h5>
+        <ul>
+          <li>Addis Ababa, Ethiopia</li>
+          <li><a href="contact.html">Send a message →</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <span>© <span id="year"></span> AddisERP Solution PLC. All rights reserved.</span>
+      <span>Automate Your Business!!</span>
+    </div>
+  </div>
+</footer>
+
+<script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+<script src="assets/js/main.js"></script>
+<script src="assets/js/exchange-rate.js"></script>
+</body>
+</html>
