@@ -1,0 +1,3 @@
+# Deny all direct web access to this folder — it only holds the server-side rate cache
+Require all denied
+Deny from all
