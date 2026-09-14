@@ -15,11 +15,24 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function renderRow(bank) {
     var tr = document.createElement('tr');
+<<<<<<< HEAD
+=======
+    if (bank.status !== 'ok' && bank.reason) {
+      tr.title = bank.reason;
+    }
+>>>>>>> a654734 (add swiftcode)
 
     var nameTd = document.createElement('td');
     nameTd.textContent = bank.name;
     tr.appendChild(nameTd);
 
+<<<<<<< HEAD
+=======
+    var swiftTd = document.createElement('td');
+    swiftTd.textContent = bank.swift || '—';
+    tr.appendChild(swiftTd);
+
+>>>>>>> a654734 (add swiftcode)
     ['usd', 'eur'].forEach(function (cur) {
       var buyTd = document.createElement('td');
       var sellTd = document.createElement('td');
@@ -37,6 +50,7 @@ document.addEventListener('DOMContentLoaded', function () {
       tr.appendChild(sellTd);
     });
 
+<<<<<<< HEAD
     var statusTd = document.createElement('td');
     if (bank.status === 'ok') {
       statusTd.innerHTML = '<span class="badge done">Live</span>';
@@ -55,6 +69,8 @@ document.addEventListener('DOMContentLoaded', function () {
     linkTd.appendChild(a);
     tr.appendChild(linkTd);
 
+=======
+>>>>>>> a654734 (add swiftcode)
     return tr;
   }
 

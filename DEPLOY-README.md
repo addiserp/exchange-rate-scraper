@@ -165,6 +165,17 @@ no upload involved, useful for testing the scraper itself or for the
   falls back to a curl-only fetch for every bank so the page isn't
   completely empty — but most banks will show "Unavailable" until you
   run `scripts/scrape_rates.py` at least once.
+<<<<<<< HEAD
+=======
+- Each bank's SWIFT/BIC code is stored as a static `swift` field
+  alongside its name in both `api/exchange-rates.php` and
+  `scripts/scrape_rates.py` — it's not scraped, since SWIFT codes
+  essentially never change. All 21 were cross-checked against multiple
+  independent sources (verify.et, Wise, XE, openbankingtracker, and
+  each bank's own site where available) before being added. If a bank
+  ever changes its SWIFT code, update the `'swift' => '...'` value in
+  both files.
+>>>>>>> a654734 (add swiftcode)
 - Bank site HTML changes over time without notice. If a bank that used
   to work stops working, check its current markup and adjust
   `extract_currency_rate()` — the same parsing logic lives in both
