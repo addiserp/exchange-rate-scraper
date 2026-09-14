@@ -1,38 +1,4 @@
 #!/usr/bin/env python3
-"""
-scrape_rates.py — headless-browser exchange-rate scraper for AddisERP's
-exchange-rate.html page.
-
-WHY THIS EXISTS
-----------------
-api/exchange-rates.php fetches each bank's page with plain PHP curl,
-which never runs JavaScript. Most Ethiopian bank sites load their rate
-table via JavaScript a second or two AFTER the page itself finishes
-loading, so curl only ever sees a "Loading..." placeholder for those
-banks. There is no way to fix that from PHP alone — curl cannot run
-JS no matter how long you make it wait.
-
-This script uses a real (headless) Chromium browser via Playwright,
-which DOES run each page's JavaScript, waits a few seconds for the
-rate widgets to populate, then reads the actual rendered numbers.
-It writes its results to data/exchange-rates-cache.json — the exact
-same file api/exchange-rates.php already reads from — so nothing on
-the PHP/frontend side has to change to benefit from this.
-
-HOW TO RUN IT
--------------
-One-off:
-    python3 scripts/scrape_rates.py
-
-On a schedule (recommended — every 10 minutes), add a crontab entry:
-    */10 * * * * cd /path/to/addiserp-site-new && /usr/bin/python3 scripts/scrape_rates.py >> /tmp/scrape_rates.log 2>&1
-
-SETUP (one-time, on the machine that will run this — your local
-Ubuntu box for testing, or a VPS for production; NOT typical shared
-PHP hosting, which can't run Chromium):
-    pip install --break-system-packages playwright beautifulsoup4
-    python3 -m playwright install --with-deps chromium
-"""
 
 import json
 import re
