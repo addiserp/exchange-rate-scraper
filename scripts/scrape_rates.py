@@ -20,33 +20,6 @@ WAIT_SECONDS = 5
 PAGE_TIMEOUT_MS = 25_000
 
 BANKS = [
-<<<<<<< HEAD
-    {"name": "Abay Bank S.C", "url": "https://exchange.addisfortune.news/bank/abay-bank-sc"},
-    {"name": "Addis International Bank S.C", "url": "https://www.addisbanksc.com/"},
-    {"name": "Ahadu Bank S.C", "url": "https://exchange.addisfortune.news/bank/ahadu-bank-sc"},
-    {"name": "Amhara Bank S.C", "url": "https://www.amharabank.com/daily-exchange-rate/"},
-    {"name": "Awash Bank S.C", "url": "https://awashbank.com/exchange-historical/"},
-    {"name": "Bank of Abyssinia", "url": "https://www.bankofabyssinia.com/exchange-rate-2/"},
-    {"name": "Berhan Bank S.C.", "url": "https://berhanbanksc.com/exchange-rates/"},
-    {"name": "Bunna International Bank", "url": "https://bunnabanksc.com/foreign-exchange/"},
-    {"name": "Commercial Bank of Ethiopia", "url": "https://combanketh.et/exchange-rates?srcPage=home"},
-    {"name": "Cooperative Bank of Oromia S.C.", "url": "https://coopbankoromia.com.et/daily-exchange-rates/"},
-    {"name": "Dashen Bank S.C", "url": "https://dashenbanksc.com/daily-exchange-rate/"},
-    {"name": "Enat Bank S.C", "url": "https://www.enatbanksc.com/"},
-    {"name": "Gadaa Bank S.C", "url": "https://gadaabank.com.et/foreign-exchange-remittances/"},
-    {"name": "Global Bank Ethiopia S.C", "url": "https://www.globalbankethiopia.com/remittance-forex/"},
-    {"name": "Hibret Bank S.C. (United Bank)", "url": "https://www.hibretbank.com.et/hibret-banks-daily-exchange-rate/"},
-    {"name": "Lion International Bank S.C", "url": "https://exchange.addisfortune.news/bank/anbesa-bank-1"},
-    {"name": "National Bank of Ethiopia", "url": "https://nbe.gov.et/"},
-    {"name": "Nib International Bank S.C", "url": "https://www.nibbanksc.com/exchange-rate/"},
-    # Oromia International Bank's site disallows automated access via
-    # robots.txt — we don't fetch it at all, out of respect for that,
-    # same as api/exchange-rates.php.
-    {"name": "Oromia International Bank S.C", "url": "https://oromiabank.com/exchange-rates/",
-     "skip": True, "reason": "This bank's site blocks automated access (robots.txt)"},
-    {"name": "Wegagen Bank S.C", "url": "https://www.wegagen.com/exchange-rate-cash-notes/"},
-    {"name": "Zemen Bank S.C", "url": "https://zemenbank.com/exchange-rates/"},
-=======
     {"name": "Abay Bank S.C", "swift": "ABAYETAA", "url": "https://exchange.addisfortune.news/bank/abay-bank-sc"},
     {"name": "Addis International Bank S.C", "swift": "ABSCETAA", "url": "https://www.addisbanksc.com/"},
     {"name": "Ahadu Bank S.C", "swift": "AHUUETAA", "url": "https://exchange.addisfortune.news/bank/ahadu-bank-sc"},
@@ -72,7 +45,6 @@ BANKS = [
      "skip": True, "reason": "This bank's site blocks automated access (robots.txt)"},
     {"name": "Wegagen Bank S.C", "swift": "WEGAETAA", "url": "https://www.wegagen.com/exchange-rate-cash-notes/"},
     {"name": "Zemen Bank S.C", "swift": "ZEMEETAA", "url": "https://zemenbank.com/exchange-rates/"},
->>>>>>> a654734 (add swiftcode)
 ]
 
 NUM_RE = re.compile(r"^-?\d+(\.\d{2,4})?$")
@@ -103,16 +75,10 @@ def extract_currency_rate(html: str, code: str):
 
 
 def scrape_bank(page, bank):
-<<<<<<< HEAD
-    if bank.get("skip"):
-        return {
-            "name": bank["name"], "url": bank["url"], "status": "unavailable",
-=======
     swift = bank.get("swift")
     if bank.get("skip"):
         return {
             "name": bank["name"], "swift": swift, "url": bank["url"], "status": "unavailable",
->>>>>>> a654734 (add swiftcode)
             "reason": bank["reason"], "usd": None, "eur": None,
         }
     try:
@@ -122,11 +88,7 @@ def scrape_bank(page, bank):
         html = page.content()
     except Exception as exc:  # noqa: BLE001 — we want to keep going on any bank failure
         return {
-<<<<<<< HEAD
-            "name": bank["name"], "url": bank["url"], "status": "unavailable",
-=======
             "name": bank["name"], "swift": swift, "url": bank["url"], "status": "unavailable",
->>>>>>> a654734 (add swiftcode)
             "reason": f"Could not load the page ({type(exc).__name__})", "usd": None, "eur": None,
         }
 
@@ -135,19 +97,11 @@ def scrape_bank(page, bank):
 
     if not usd and not eur:
         return {
-<<<<<<< HEAD
-            "name": bank["name"], "url": bank["url"], "status": "unavailable",
-            "reason": "Rate wasn't found in a readable format, even after waiting for the page to load",
-            "usd": None, "eur": None,
-        }
-    return {"name": bank["name"], "url": bank["url"], "status": "ok", "usd": usd, "eur": eur}
-=======
             "name": bank["name"], "swift": swift, "url": bank["url"], "status": "unavailable",
             "reason": "Rate wasn't found in a readable format, even after waiting for the page to load",
             "usd": None, "eur": None,
         }
     return {"name": bank["name"], "swift": swift, "url": bank["url"], "status": "ok", "usd": usd, "eur": eur}
->>>>>>> a654734 (add swiftcode)
 
 
 def main():
