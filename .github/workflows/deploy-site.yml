@@ -26,10 +26,15 @@ name: Deploy site files to Plesk (FTP)
 # repo (git-ignored files like config/upload-token.php and the
 # data/exchange-rates-cache.json cache are never touched), and skips
 # the files below that don't belong on the live server.
+#
+# DISABLED BY DEFAULT: this host turned out to have Plesk's Git
+# extension available after all, so deployment switched to that
+# instead (Plesk pulls straight from GitHub — see DEPLOY-README.md).
+# This workflow is kept as a fallback: trigger it manually from the
+# Actions tab (workflow_dispatch) if Plesk's Git deploy ever stops
+# working. It won't run automatically on push.
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch: {}
 
 jobs:
