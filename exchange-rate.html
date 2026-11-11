@@ -49,6 +49,27 @@
     border-radius:6px; padding:16px 20px; margin-top:18px;
   }
   .disclaimer strong{ color:var(--charcoal); }
+
+  .black-market-card{
+    background:var(--ink); color:#fff; border-radius:6px;
+    padding:18px 20px; margin-bottom:18px;
+  }
+  .bmc-label{
+    font-family:var(--mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em;
+    color:var(--gold-l); margin-bottom:8px;
+  }
+  .bmc-rates{ display:flex; flex-wrap:wrap; gap:22px; align-items:baseline; font-family:var(--mono); }
+  .bmc-rates .bmc-figure{ font-size:1.5rem; font-weight:600; }
+  .bmc-rates .bmc-figure-label{ font-size:.7rem; color:#AEB8C8; text-transform:uppercase; letter-spacing:.06em; display:block; margin-bottom:2px; font-family:var(--body); font-weight:500; }
+  .bmc-note{ font-size:.76rem; color:#AEB8C8; margin-top:10px; }
+  .bmc-note a{ color:var(--gold-l); }
+
+  .sort-control{ display:flex; align-items:center; gap:8px; }
+  .sort-control label{ font-size:.78rem; color:var(--slate); margin:0; font-weight:500; }
+  .sort-control select{
+    font-family:var(--mono); font-size:.8rem; padding:7px 10px; border:1px solid var(--line);
+    border-radius:var(--radius); background:#fff; color:var(--charcoal);
+  }
 </style>
 </head>
 <body>
@@ -86,11 +107,24 @@
 <section>
   <div class="container">
 
+    <div class="black-market-card" id="black-market-card" data-reveal>
+      <div class="bmc-label">USD/ETB — Black Market (Parallel Rate)</div>
+      <div class="bmc-rates" id="black-market-rates">Loading…</div>
+      <div class="bmc-note">Unofficial, informal street rate from <a href="https://egcurrency.com/en/currency/USD-to-ETB/blackMarket" target="_blank" rel="noopener noreferrer">egcurrency.com</a> — not a bank or exchange quote, and not independently verified. Shown for reference only.</div>
+    </div>
+
     <div class="rate-bar">
       <div class="meta">
         <span class="updated" id="rate-updated">Loading…</span>
         <span class="live-count" id="rate-live-count"></span>
         <span class="status-msg" id="rate-status"></span>
+      </div>
+      <div class="sort-control">
+        <label for="rate-sort">Sort by</label>
+        <select id="rate-sort">
+          <option value="usd-buy" selected>USD Buy (highest first)</option>
+          <option value="usd-sell">USD Sell (highest first)</option>
+        </select>
       </div>
       <button class="btn-refresh" id="rate-refresh" type="button">↻ Refresh now</button>
     </div>

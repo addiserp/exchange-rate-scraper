@@ -115,6 +115,18 @@ if ($cacheReadError !== null) {
 // banks' data, not improve it.
 if (!$force && $existingCache !== null) {
     $existingCache['from_cache'] = true;
+    // Older cache files (written before the black-market feature) won't
+    // have this key yet — backfill so the frontend always sees it.
+    if (!isset($existingCache['black_market'])) {
+        $existingCache['black_market'] = [
+            'source' => 'egcurrency.com',
+            'url'    => 'https://egcurrency.com/en/currency/USD-to-ETB/blackMarket',
+            'status' => 'unavailable',
+            'reason' => 'Not fetched yet — run scripts/scrape_rates.py',
+            'buy'    => null,
+            'sell'   => null,
+        ];
+    }
     echo json_encode($existingCache);
     exit;
 }
@@ -254,6 +266,26 @@ foreach ($BANKS as $i => $bank) {
             'name'   => $bank['name'],
             'swift'  => $bank['swift'] ?? null,
             'url'    => $bank['url'],
+            'status' => 'unavailable',
+            'reason' => $bank['reason'] ?? 'Not available for automated fetching',
+            'usd'    => null,
+            'eur'    => null,
+        ];
+        continue;
+    }
+
+    // Try the quick curl-only fetch first — it only ever works for the
+    // rare bank whose site renders its rate table in plain HTML
+    // without needing JavaScript.
+    $body = $fetchResults[$i]['body'] ?? '';
+    $usd = extract_currency_rate($body, 'USD');
+    $eur = extract_currency_rate($body, 'EUR');
+
+    if ($usd || $eur) {
+        $out[] = [
+            'name'   => $bank['name'],
+            'swift'  => $bank['swift'] ?? null,
+            'url'    => $bank['url'],
             'status' => 'ok',
             'usd'    => $usd,
             'eur'    => $eur,
@@ -278,12 +310,25 @@ foreach ($BANKS as $i => $bank) {
     }
 }
 
+// The black-market rate is JS-rendered on its source site too, so a
+// plain curl refresh can't improve it — just carry over whatever the
+// last Playwright scrape (scripts/scrape_rates.py) found.
+$blackMarket = $existingCache['black_market'] ?? [
+    'source' => 'egcurrency.com',
+    'url'    => 'https://egcurrency.com/en/currency/USD-to-ETB/blackMarket',
+    'status' => 'unavailable',
+    'reason' => 'Not fetched yet — run scripts/scrape_rates.py',
+    'buy'    => null,
+    'sell'   => null,
+];
+
 $result = [
     'fetched_at'     => time(),
     'fetched_at_iso' => date('c'),
     'from_cache'     => false,
     'source'         => 'curl-quick-refresh',
     'banks'          => $out,
+    'black_market'   => $blackMarket,
 ];
 
 @mkdir(dirname(CACHE_FILE), 0755, true);

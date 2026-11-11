@@ -5,12 +5,33 @@ document.addEventListener('DOMContentLoaded', function () {
   var refreshBtn = document.getElementById('rate-refresh');
   var statusEl = document.getElementById('rate-status');
   var liveCountEl = document.getElementById('rate-live-count');
+  var sortSelect = document.getElementById('rate-sort');
+  var blackMarketRatesEl = document.getElementById('black-market-rates');
 
   if (!tbody) return;
+
+  var lastData = null; // kept so changing the sort order doesn't need a re-fetch
 
   function fmt(n) {
     if (n === null || n === undefined) return '—';
     return Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+  }
+
+  // Default sort is USD Buy, highest first; the dropdown can switch to
+  // USD Sell instead. Banks without a live USD number (status !== 'ok')
+  // always sort to the bottom, regardless of sort field.
+  function sortBanks(banks, sortMode) {
+    var field = sortMode === 'usd-sell' ? 'sell' : 'buy';
+    var sorted = banks.slice();
+    sorted.sort(function (a, b) {
+      var aOk = a.status === 'ok' && a.usd && typeof a.usd[field] === 'number';
+      var bOk = b.status === 'ok' && b.usd && typeof b.usd[field] === 'number';
+      if (aOk && !bOk) return -1;
+      if (!aOk && bOk) return 1;
+      if (!aOk && !bOk) return 0;
+      return b.usd[field] - a.usd[field]; // highest first
+    });
+    return sorted;
   }
 
   function renderRow(bank) {
@@ -47,16 +68,42 @@ document.addEventListener('DOMContentLoaded', function () {
     return tr;
   }
 
+  function renderBlackMarket(blackMarket) {
+    if (!blackMarketRatesEl) return;
+    if (!blackMarket || blackMarket.status !== 'ok') {
+      blackMarketRatesEl.textContent = 'Unavailable right now' +
+        (blackMarket && blackMarket.reason ? ' — ' + blackMarket.reason : '.');
+      return;
+    }
+    blackMarketRatesEl.innerHTML = '';
+    [['Buy', blackMarket.buy], ['Sell', blackMarket.sell]].forEach(function (pair) {
+      var wrap = document.createElement('div');
+      var label = document.createElement('span');
+      label.className = 'bmc-figure-label';
+      label.textContent = pair[1] == null ? '' : pair[0];
+      var figure = document.createElement('div');
+      figure.className = 'bmc-figure';
+      figure.textContent = pair[1] == null ? '—' : fmt(pair[1]) + ' ETB';
+      wrap.appendChild(label);
+      wrap.appendChild(figure);
+      blackMarketRatesEl.appendChild(wrap);
+    });
+  }
+
   function render(data) {
+    lastData = data;
+    var sortMode = sortSelect ? sortSelect.value : 'usd-buy';
+    var banks = sortBanks(data.banks || [], sortMode);
+
     tbody.innerHTML = '';
     var liveCount = 0;
-    (data.banks || []).forEach(function (bank) {
+    banks.forEach(function (bank) {
       if (bank.status === 'ok') liveCount++;
       tbody.appendChild(renderRow(bank));
     });
 
     if (liveCountEl) {
-      liveCountEl.textContent = liveCount + ' of ' + (data.banks || []).length + ' banks live';
+      liveCountEl.textContent = liveCount + ' of ' + banks.length + ' banks live';
     }
 
     if (updatedEl) {
@@ -67,6 +114,8 @@ document.addEventListener('DOMContentLoaded', function () {
       });
       updatedEl.textContent = (data.from_cache ? 'Rates as of ' : 'Just refreshed — rates as of ') + label;
     }
+
+    renderBlackMarket(data.black_market);
   }
 
   function setStatus(msg, isError) {
@@ -110,6 +159,12 @@ document.addEventListener('DOMContentLoaded', function () {
   if (refreshBtn) {
     refreshBtn.addEventListener('click', function () {
       load(true);
+    });
+  }
+
+  if (sortSelect) {
+    sortSelect.addEventListener('change', function () {
+      if (lastData) render(lastData); // re-sort in place, no need to re-fetch
     });
   }
 });

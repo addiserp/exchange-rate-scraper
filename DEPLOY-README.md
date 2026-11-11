@@ -178,6 +178,21 @@ no upload involved, useful for testing the scraper itself or for the
   `extract_currency_rate()` — the same parsing logic lives in both
   `api/exchange-rates.php` (PHP) and `scripts/scrape_rates.py`
   (Python), so update both if you change the heuristic.
+- **USD/ETB "black market" (parallel) rate**: shown in a dark card
+  above the bank table, sourced from egcurrency.com
+  (`scripts/scrape_rates.py`'s `scrape_black_market()`). This is an
+  informal, unofficial street rate — no bank, exchange, or financial
+  data vendor (TradingView included) actually tracks Ethiopia's
+  parallel market, so this number is unverified and clearly labeled as
+  such on the page. Like most bank sites, egcurrency.com renders its
+  rate with JS, so it needs the same Playwright wait as the banks; the
+  PHP quick-refresh just carries over the last Playwright-fetched
+  value instead of trying (and failing) to curl it.
+- **Bank table sort order**: defaults to USD Buy rate, highest first
+  (`assets/js/exchange-rate.js`'s `sortBanks()`); a dropdown next to
+  "Refresh now" lets visitors switch to USD Sell instead. Banks with
+  no live rate always sort to the bottom regardless of the field
+  chosen.
 
 ## Editing content later
 

@@ -49,6 +49,23 @@ BANKS = [
 
 NUM_RE = re.compile(r"^-?\d+(\.\d{2,4})?$")
 
+# Parallel/"black market" USD/ETB rate — informal street rate, not an
+# official bank or exchange quote. No bank, exchange or financial data
+# vendor (incl. TradingView) actually tracks this; egcurrency.com is a
+# dedicated tracker for it. Its numbers are unverified/unofficial, so
+# this is shown on the page clearly labeled as such.
+BLACK_MARKET_URL = "https://egcurrency.com/en/currency/USD-to-ETB/blackMarket"
+BLACK_MARKET_SOURCE_NAME = "egcurrency.com"
+
+# e.g. "...at Black Market, Tuesday, 04.08.2026 11:18\n\n160.22"
+BLACK_MARKET_BUY_RE = re.compile(
+    r"Black Market[^\n]*\n+\s*([\d,]+\.\d+)", re.IGNORECASE
+)
+# e.g. "Sell Price: 158.62 -0.12 Compared to yesterday's last price"
+BLACK_MARKET_SELL_RE = re.compile(
+    r"Sell Price:\s*([\d,]+\.\d+)", re.IGNORECASE
+)
+
 
 def extract_currency_rate(html: str, code: str):
     """Same heuristic as the PHP parser: find a table row mentioning the
@@ -104,6 +121,40 @@ def scrape_bank(page, bank):
     return {"name": bank["name"], "swift": swift, "url": bank["url"], "status": "ok", "usd": usd, "eur": eur}
 
 
+def scrape_black_market(page):
+    """Fetch the informal USD/ETB "black market" rate from egcurrency.com.
+    This is not a bank or exchange quote — it's an unofficial, unverified
+    street-rate tracker, so callers should always label it clearly as
+    such. Like most of the bank sites, its numbers are rendered by JS
+    after load, so this needs the same headless-browser-plus-wait
+    approach as scrape_bank()."""
+    try:
+        page.goto(BLACK_MARKET_URL, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
+        page.wait_for_timeout(WAIT_SECONDS * 1000)
+        text = page.inner_text("body")
+    except Exception as exc:  # noqa: BLE001
+        return {
+            "source": BLACK_MARKET_SOURCE_NAME, "url": BLACK_MARKET_URL, "status": "unavailable",
+            "reason": f"Could not load the page ({type(exc).__name__})", "buy": None, "sell": None,
+        }
+
+    buy_match = BLACK_MARKET_BUY_RE.search(text)
+    sell_match = BLACK_MARKET_SELL_RE.search(text)
+    buy = float(buy_match.group(1).replace(",", "")) if buy_match else None
+    sell = float(sell_match.group(1).replace(",", "")) if sell_match else None
+
+    if buy is None and sell is None:
+        return {
+            "source": BLACK_MARKET_SOURCE_NAME, "url": BLACK_MARKET_URL, "status": "unavailable",
+            "reason": "Rate wasn't found in a readable format, even after waiting for the page to load",
+            "buy": None, "sell": None,
+        }
+    return {
+        "source": BLACK_MARKET_SOURCE_NAME, "url": BLACK_MARKET_URL, "status": "ok",
+        "buy": buy, "sell": sell,
+    }
+
+
 def main():
     started = time.time()
     results = []
@@ -118,6 +169,9 @@ def main():
         for bank in BANKS:
             print(f"Scraping {bank['name']}...", file=sys.stderr)
             results.append(scrape_bank(page, bank))
+
+        print("Scraping black-market USD/ETB rate...", file=sys.stderr)
+        black_market = scrape_black_market(page)
         browser.close()
 
     now = datetime.now(timezone.utc)
@@ -127,6 +181,7 @@ def main():
         "from_cache": False,
         "source": "playwright",
         "banks": results,
+        "black_market": black_market,
     }
 
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)
