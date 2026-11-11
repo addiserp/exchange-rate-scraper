@@ -48,6 +48,43 @@ install.
 6. **Set the homepage**: Plesk automatically serves `index.html` at the
    domain root — no extra config needed.
 
+## Automatic deploys from GitHub (optional, recommended)
+
+Instead of manually re-uploading files to `httpdocs/` every time
+something changes, `.github/workflows/deploy-site.yml` can push every
+commit on `main` straight to your Plesk host over FTP — this host's
+Plesk doesn't have the Git extension enabled, so FTP is the
+alternative. One-time setup:
+
+1. In Plesk: **Websites & Domains → [your domain] → FTP Access**. Note
+   the FTP host, username and password.
+2. In GitHub: **Settings → Secrets and variables → Actions**, add
+   three repository secrets:
+   - `FTP_SERVER` — the FTP host from step 1
+   - `FTP_USERNAME` — the FTP username from step 1
+   - `FTP_PASSWORD` — the FTP password from step 1
+3. Check the `server-dir` setting in the workflow file — it defaults
+   to `./`, which is correct if your FTP login lands directly inside
+   `httpdocs/`. If it instead lands one level above (you see an
+   `httpdocs` folder right after logging in), change `server-dir` to
+   `./httpdocs/`.
+4. Before relying on it, test it once by hand: GitHub repo →
+   **Actions** tab → "Deploy site files to Plesk (FTP)" → **Run
+   workflow**. Check the live site afterward to confirm it worked.
+
+Once set up, every `git push` to `main` deploys automatically. The
+workflow never touches `data/exchange-rates-cache.json` or
+`config/upload-token.php` on the server (both are excluded), so it
+won't disturb the live rate cache or your secret upload token.
+
+Until this is set up, keep deploying manually as described above —
+just remember to re-upload *every* file `git diff` shows as changed,
+not just the `.html` file you may have been looking at. A page's
+behavior often lives in its paired `.js` or `.php` file (e.g.
+`exchange-rate.html` depends on `assets/js/exchange-rate.js` and
+`api/exchange-rates.php`), and uploading only the HTML leaves the old
+script/endpoint running against the new markup.
+
 ## Making the contact form work
 
 1. Open `contact-handler.php` and change this line near the top to your

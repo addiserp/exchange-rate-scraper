@@ -1,0 +1,59 @@
+name: Deploy site files to Plesk (FTP)
+
+# Automatically uploads the website files to your Plesk host over FTP
+# every time something is pushed to main — no more manually copying
+# files into httpdocs.
+#
+# ONE-TIME SETUP:
+#   1. In Plesk, find your FTP (or "web space") login: Websites &
+#      Domains -> your domain -> FTP Access. Note the host, username
+#      and password. (Plesk's FTP host is usually your domain name or
+#      the server's IP; ask your host/ethiotel support if unsure.)
+#   2. In GitHub: Settings -> Secrets and variables -> Actions, add:
+#        FTP_SERVER   = ftp.yourdomain.com   (host from step 1)
+#        FTP_USERNAME = <ftp username from step 1>
+#        FTP_PASSWORD = <ftp password from step 1>
+#   3. Check the "server-dir" value below. Most Plesk FTP accounts for
+#      a domain log in directly into httpdocs already, so "./" is
+#      usually correct. If your FTP user instead lands one level up
+#      (so you currently see an "httpdocs" folder after logging in),
+#      change server-dir to "./httpdocs/" instead.
+#   4. Push to main, or run this workflow manually once from the
+#      Actions tab (workflow_dispatch) to test it before trusting it
+#      to run automatically.
+#
+# This workflow only uploads files that are actually tracked in this
+# repo (git-ignored files like config/upload-token.php and the
+# data/exchange-rates-cache.json cache are never touched), and skips
+# the files below that don't belong on the live server.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+
+      - name: Deploy over FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./
+          server-dir: ./
+          exclude: |
+            **/.git*
+            **/.git*/**
+            .github/**
+            scripts/**
+            data/**
+            config/upload-token.php
+            DEPLOY-README.md
+            README.md
