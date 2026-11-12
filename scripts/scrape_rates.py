@@ -57,14 +57,27 @@ NUM_RE = re.compile(r"^-?\d+(\.\d{2,4})?$")
 BLACK_MARKET_URL = "https://egcurrency.com/en/currency/USD-to-ETB/blackMarket"
 BLACK_MARKET_SOURCE_NAME = "egcurrency.com"
 
-# e.g. "...at Black Market, Tuesday, 04.08.2026 11:18\n\n160.22"
-BLACK_MARKET_BUY_RE = re.compile(
-    r"Black Market[^\n]*\n+\s*([\d,]+\.\d+)", re.IGNORECASE
-)
-# e.g. "Sell Price: 158.62 -0.12 Compared to yesterday's last price"
-BLACK_MARKET_SELL_RE = re.compile(
-    r"Sell Price:\s*([\d,]+\.\d+)", re.IGNORECASE
-)
+# The page's rate card looks like (confirmed by rendering the real
+# page, not just a cached snippet — the site's layout has changed at
+# least once since this was first written):
+#   US Dollar to Ethiopian Birr market exchange rate
+#   ...
+#   Bank
+#   Market          <- "Market" tab is the one pre-selected on this
+#   US Dollar          /blackMarket URL; "Bank" is their official rate
+#   Ethiopian Birr
+#   Buy
+#   161.42
+#   ETB
+#   Sell
+#   159.81
+#   ETB
+# Anchor past the page title first so this can't accidentally match
+# one of the unrelated currency-pair tickers (AED/USD, EUR/USD, etc.)
+# shown elsewhere on the same page.
+BLACK_MARKET_SECTION_RE = re.compile(r"US Dollar to Ethiopian Birr.*", re.DOTALL)
+BLACK_MARKET_BUY_RE = re.compile(r"Buy\s*\n\s*([\d,]+\.?\d*)\s*\n\s*ETB", re.IGNORECASE)
+BLACK_MARKET_SELL_RE = re.compile(r"Sell:?\s*\n?\s*([\d,]+\.?\d*)\s*\n?\s*ETB", re.IGNORECASE)
 
 
 def extract_currency_rate(html: str, code: str):
@@ -138,8 +151,11 @@ def scrape_black_market(page):
             "reason": f"Could not load the page ({type(exc).__name__})", "buy": None, "sell": None,
         }
 
-    buy_match = BLACK_MARKET_BUY_RE.search(text)
-    sell_match = BLACK_MARKET_SELL_RE.search(text)
+    section_match = BLACK_MARKET_SECTION_RE.search(text)
+    section_text = section_match.group(0) if section_match else text
+
+    buy_match = BLACK_MARKET_BUY_RE.search(section_text)
+    sell_match = BLACK_MARKET_SELL_RE.search(section_text)
     buy = float(buy_match.group(1).replace(",", "")) if buy_match else None
     sell = float(sell_match.group(1).replace(",", "")) if sell_match else None
 
