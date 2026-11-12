@@ -219,6 +219,9 @@
 
 <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 <script src="assets/js/main.js"></script>
-<script src="assets/js/exchange-rate.js"></script>
+<!-- .htaccess caches .js for 1 month (ExpiresByType application/javascript) with
+     no filename hashing, so bump ?v=N any time exchange-rate.js changes, or
+     browsers/caching proxies will keep serving the old file for weeks. -->
+<script src="assets/js/exchange-rate.js?v=3"></script>
 </body>
 </html>
