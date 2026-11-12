@@ -50,34 +50,34 @@ BANKS = [
 NUM_RE = re.compile(r"^-?\d+(\.\d{2,4})?$")
 
 # Parallel/"black market" USD/ETB rate — informal street rate, not an
-# official bank or exchange quote. No bank, exchange or financial data
-# vendor (incl. TradingView) actually tracks this; egcurrency.com is a
-# dedicated tracker for it. Its numbers are unverified/unofficial, so
-# this is shown on the page clearly labeled as such.
-BLACK_MARKET_URL = "https://egcurrency.com/en/currency/USD-to-ETB/blackMarket"
-BLACK_MARKET_SOURCE_NAME = "egcurrency.com"
+# official bank or exchange quote. ethioblackmarket.com is a live
+# peer-to-peer trading board (its own buyers/sellers posting actual
+# deals, with a Telegram group behind it) — its traffic is almost
+# entirely from Ethiopia itself, unlike generic multi-country rate
+# aggregators, which is the best signal available that this is the
+# rate actually used/trusted locally rather than a generic SEO page.
+# Still unofficial/unverified, so shown on the page clearly labeled as
+# such. (An earlier version of this pointed at egcurrency.com, whose
+# "black market" number turned out to barely differ from its own bank
+# rate — not a plausible parallel-market premium — so it was dropped.)
+BLACK_MARKET_URL = "https://ethioblackmarket.com/"
+BLACK_MARKET_SOURCE_NAME = "ethioblackmarket.com"
 
-# The page's rate card looks like (confirmed by rendering the real
-# page, not just a cached snippet — the site's layout has changed at
-# least once since this was first written):
-#   US Dollar to Ethiopian Birr market exchange rate
+# The page doesn't publish a simple buy/sell pair — it's a live order
+# book, with individual buyer/seller posts at their own prices, rolled
+# up into one live rate plus a rolling 24h range and % change
+# (confirmed by rendering the real page):
+#   OPEN            187.3635
+#   CLOSE           187.3862
+#   RANGE           187.06 - 187.90
+#   DAILY           +0.28%
 #   ...
-#   Bank
-#   Market          <- "Market" tab is the one pre-selected on this
-#   US Dollar          /blackMarket URL; "Bank" is their official rate
-#   Ethiopian Birr
-#   Buy
-#   161.42
-#   ETB
-#   Sell
-#   159.81
-#   ETB
-# Anchor past the page title first so this can't accidentally match
-# one of the unrelated currency-pair tickers (AED/USD, EUR/USD, etc.)
-# shown elsewhere on the same page.
-BLACK_MARKET_SECTION_RE = re.compile(r"US Dollar to Ethiopian Birr.*", re.DOTALL)
-BLACK_MARKET_BUY_RE = re.compile(r"Buy\s*\n\s*([\d,]+\.?\d*)\s*\n\s*ETB", re.IGNORECASE)
-BLACK_MARKET_SELL_RE = re.compile(r"Sell:?\s*\n?\s*([\d,]+\.?\d*)\s*\n?\s*ETB", re.IGNORECASE)
+#   187.88
+#   Rate:
+#   1 USD = 187.88 ETB
+BLACK_MARKET_RATE_RE = re.compile(r"Rate:\s*\n?\s*1 USD = ([\d,]+\.?\d*) ETB", re.IGNORECASE)
+BLACK_MARKET_RANGE_RE = re.compile(r"RANGE\s*\n\s*([\d,]+\.?\d*)\s*-\s*([\d,]+\.?\d*)", re.IGNORECASE)
+BLACK_MARKET_DAILY_RE = re.compile(r"DAILY\s*\n\s*([+-]?[\d.]+)\s*%", re.IGNORECASE)
 
 
 def extract_currency_rate(html: str, code: str):
@@ -135,12 +135,12 @@ def scrape_bank(page, bank):
 
 
 def scrape_black_market(page):
-    """Fetch the informal USD/ETB "black market" rate from egcurrency.com.
-    This is not a bank or exchange quote — it's an unofficial, unverified
-    street-rate tracker, so callers should always label it clearly as
-    such. Like most of the bank sites, its numbers are rendered by JS
-    after load, so this needs the same headless-browser-plus-wait
-    approach as scrape_bank()."""
+    """Fetch the informal USD/ETB "black market" rate from
+    ethioblackmarket.com (a peer-to-peer trading board, not a bank or
+    exchange quote — unofficial and unverified, so callers should
+    always label it clearly as such). Like most of the bank sites, its
+    numbers are rendered by JS after load, so this needs the same
+    headless-browser-plus-wait approach as scrape_bank()."""
     try:
         page.goto(BLACK_MARKET_URL, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
         page.wait_for_timeout(WAIT_SECONDS * 1000)
@@ -148,26 +148,29 @@ def scrape_black_market(page):
     except Exception as exc:  # noqa: BLE001
         return {
             "source": BLACK_MARKET_SOURCE_NAME, "url": BLACK_MARKET_URL, "status": "unavailable",
-            "reason": f"Could not load the page ({type(exc).__name__})", "buy": None, "sell": None,
+            "reason": f"Could not load the page ({type(exc).__name__})",
+            "rate": None, "range_low": None, "range_high": None, "daily_change_pct": None,
         }
 
-    section_match = BLACK_MARKET_SECTION_RE.search(text)
-    section_text = section_match.group(0) if section_match else text
+    rate_match = BLACK_MARKET_RATE_RE.search(text)
+    range_match = BLACK_MARKET_RANGE_RE.search(text)
+    daily_match = BLACK_MARKET_DAILY_RE.search(text)
 
-    buy_match = BLACK_MARKET_BUY_RE.search(section_text)
-    sell_match = BLACK_MARKET_SELL_RE.search(section_text)
-    buy = float(buy_match.group(1).replace(",", "")) if buy_match else None
-    sell = float(sell_match.group(1).replace(",", "")) if sell_match else None
+    rate = float(rate_match.group(1).replace(",", "")) if rate_match else None
+    range_low = float(range_match.group(1).replace(",", "")) if range_match else None
+    range_high = float(range_match.group(2).replace(",", "")) if range_match else None
+    daily_change_pct = float(daily_match.group(1)) if daily_match else None
 
-    if buy is None and sell is None:
+    if rate is None:
         return {
             "source": BLACK_MARKET_SOURCE_NAME, "url": BLACK_MARKET_URL, "status": "unavailable",
             "reason": "Rate wasn't found in a readable format, even after waiting for the page to load",
-            "buy": None, "sell": None,
+            "rate": None, "range_low": None, "range_high": None, "daily_change_pct": None,
         }
     return {
         "source": BLACK_MARKET_SOURCE_NAME, "url": BLACK_MARKET_URL, "status": "ok",
-        "buy": buy, "sell": sell,
+        "rate": rate, "range_low": range_low, "range_high": range_high,
+        "daily_change_pct": daily_change_pct,
     }
 
 

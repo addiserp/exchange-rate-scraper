@@ -70,24 +70,54 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function renderBlackMarket(blackMarket) {
     if (!blackMarketRatesEl) return;
-    if (!blackMarket || blackMarket.status !== 'ok') {
+    if (!blackMarket || blackMarket.status !== 'ok' || blackMarket.rate == null) {
       blackMarketRatesEl.textContent = 'Unavailable right now' +
         (blackMarket && blackMarket.reason ? ' — ' + blackMarket.reason : '.');
       return;
     }
     blackMarketRatesEl.innerHTML = '';
-    [['Buy', blackMarket.buy], ['Sell', blackMarket.sell]].forEach(function (pair) {
-      var wrap = document.createElement('div');
-      var label = document.createElement('span');
-      label.className = 'bmc-figure-label';
-      label.textContent = pair[1] == null ? '' : pair[0];
-      var figure = document.createElement('div');
-      figure.className = 'bmc-figure';
-      figure.textContent = pair[1] == null ? '—' : fmt(pair[1]) + ' ETB';
-      wrap.appendChild(label);
-      wrap.appendChild(figure);
-      blackMarketRatesEl.appendChild(wrap);
-    });
+
+    // Main live rate
+    var rateWrap = document.createElement('div');
+    var rateLabel = document.createElement('span');
+    rateLabel.className = 'bmc-figure-label';
+    rateLabel.textContent = 'Live Rate';
+    var rateFigure = document.createElement('div');
+    rateFigure.className = 'bmc-figure';
+    rateFigure.textContent = fmt(blackMarket.rate) + ' ETB';
+    rateWrap.appendChild(rateLabel);
+    rateWrap.appendChild(rateFigure);
+    blackMarketRatesEl.appendChild(rateWrap);
+
+    // 24h range
+    if (blackMarket.range_low != null && blackMarket.range_high != null) {
+      var rangeWrap = document.createElement('div');
+      var rangeLabel = document.createElement('span');
+      rangeLabel.className = 'bmc-figure-label';
+      rangeLabel.textContent = "Today's Range";
+      var rangeFigure = document.createElement('div');
+      rangeFigure.className = 'bmc-figure';
+      rangeFigure.style.fontSize = '1rem';
+      rangeFigure.textContent = fmt(blackMarket.range_low) + ' – ' + fmt(blackMarket.range_high);
+      rangeWrap.appendChild(rangeLabel);
+      rangeWrap.appendChild(rangeFigure);
+      blackMarketRatesEl.appendChild(rangeWrap);
+    }
+
+    // Daily % change
+    if (blackMarket.daily_change_pct != null) {
+      var changeWrap = document.createElement('div');
+      var changeLabel = document.createElement('span');
+      changeLabel.className = 'bmc-figure-label';
+      changeLabel.textContent = 'Daily';
+      var changeFigure = document.createElement('div');
+      var pct = blackMarket.daily_change_pct;
+      changeFigure.className = 'bmc-change ' + (pct >= 0 ? 'up' : 'down');
+      changeFigure.textContent = (pct >= 0 ? '▲ +' : '▼ ') + pct.toFixed(2) + '%';
+      changeWrap.appendChild(changeLabel);
+      changeWrap.appendChild(changeFigure);
+      blackMarketRatesEl.appendChild(changeWrap);
+    }
   }
 
   function render(data) {

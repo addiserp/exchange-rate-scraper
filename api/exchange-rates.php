@@ -117,14 +117,19 @@ if (!$force && $existingCache !== null) {
     $existingCache['from_cache'] = true;
     // Older cache files (written before the black-market feature) won't
     // have this key yet — backfill so the frontend always sees it.
-    if (!isset($existingCache['black_market'])) {
+    if (!isset($existingCache['black_market']) || array_key_exists('buy', $existingCache['black_market'])) {
+        // Either never fetched, or still has the old egcurrency.com
+        // buy/sell schema from before the switch to ethioblackmarket.com's
+        // rate/range/daily-change schema — backfill either way.
         $existingCache['black_market'] = [
-            'source' => 'egcurrency.com',
-            'url'    => 'https://egcurrency.com/en/currency/USD-to-ETB/blackMarket',
-            'status' => 'unavailable',
-            'reason' => 'Not fetched yet — run scripts/scrape_rates.py',
-            'buy'    => null,
-            'sell'   => null,
+            'source'           => 'ethioblackmarket.com',
+            'url'              => 'https://ethioblackmarket.com/',
+            'status'           => 'unavailable',
+            'reason'           => 'Not fetched yet — run scripts/scrape_rates.py',
+            'rate'             => null,
+            'range_low'        => null,
+            'range_high'       => null,
+            'daily_change_pct' => null,
         ];
     }
     echo json_encode($existingCache);
@@ -313,14 +318,19 @@ foreach ($BANKS as $i => $bank) {
 // The black-market rate is JS-rendered on its source site too, so a
 // plain curl refresh can't improve it — just carry over whatever the
 // last Playwright scrape (scripts/scrape_rates.py) found.
-$blackMarket = $existingCache['black_market'] ?? [
-    'source' => 'egcurrency.com',
-    'url'    => 'https://egcurrency.com/en/currency/USD-to-ETB/blackMarket',
-    'status' => 'unavailable',
-    'reason' => 'Not fetched yet — run scripts/scrape_rates.py',
-    'buy'    => null,
-    'sell'   => null,
-];
+$blackMarket = $existingCache['black_market'] ?? null;
+if ($blackMarket === null || array_key_exists('buy', $blackMarket)) {
+    $blackMarket = [
+        'source'           => 'ethioblackmarket.com',
+        'url'              => 'https://ethioblackmarket.com/',
+        'status'           => 'unavailable',
+        'reason'           => 'Not fetched yet — run scripts/scrape_rates.py',
+        'rate'             => null,
+        'range_low'        => null,
+        'range_high'       => null,
+        'daily_change_pct' => null,
+    ];
+}
 
 $result = [
     'fetched_at'     => time(),

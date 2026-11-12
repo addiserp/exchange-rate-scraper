@@ -61,6 +61,9 @@
   .bmc-rates{ display:flex; flex-wrap:wrap; gap:22px; align-items:baseline; font-family:var(--mono); }
   .bmc-rates .bmc-figure{ font-size:1.5rem; font-weight:600; }
   .bmc-rates .bmc-figure-label{ font-size:.7rem; color:#AEB8C8; text-transform:uppercase; letter-spacing:.06em; display:block; margin-bottom:2px; font-family:var(--body); font-weight:500; }
+  .bmc-rates .bmc-change{ font-size:.95rem; font-weight:600; }
+  .bmc-rates .bmc-change.up{ color:#7FD99A; }
+  .bmc-rates .bmc-change.down{ color:#E79B8A; }
   .bmc-note{ font-size:.76rem; color:#AEB8C8; margin-top:10px; }
   .bmc-note a{ color:var(--gold-l); }
 
@@ -110,7 +113,7 @@
     <div class="black-market-card" id="black-market-card" data-reveal>
       <div class="bmc-label">USD/ETB — Black Market (Parallel Rate)</div>
       <div class="bmc-rates" id="black-market-rates">Loading…</div>
-      <div class="bmc-note">Unofficial, informal street rate from <a href="https://egcurrency.com/en/currency/USD-to-ETB/blackMarket" target="_blank" rel="noopener noreferrer">egcurrency.com</a> — not a bank or exchange quote, and not independently verified. Shown for reference only.</div>
+      <div class="bmc-note">Unofficial, informal peer-to-peer rate from <a href="https://ethioblackmarket.com/" target="_blank" rel="noopener noreferrer">ethioblackmarket.com</a> — not a bank or exchange quote, and not independently verified. Shown for reference only.</div>
     </div>
 
     <div class="rate-bar">
@@ -222,6 +225,6 @@
 <!-- .htaccess caches .js for 1 month (ExpiresByType application/javascript) with
      no filename hashing, so bump ?v=N any time exchange-rate.js changes, or
      browsers/caching proxies will keep serving the old file for weeks. -->
-<script src="assets/js/exchange-rate.js?v=3"></script>
+<script src="assets/js/exchange-rate.js?v=4"></script>
 </body>
 </html>
