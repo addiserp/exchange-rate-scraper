@@ -368,6 +368,11 @@ textarea{ resize:vertical; min-height:120px; }
 /* ---- misc ---- */
 .split{ display:grid; grid-template-columns:1fr 1fr; gap:56px; align-items:center; }
 @media (max-width:860px){ .split{ grid-template-columns:1fr; } }
+/* Grid items default to min-width:auto, so a wide child (like a table) stretched the
+   whole column past the phone screen. Let columns shrink, and don't force the small
+   info tables inside split layouts to be 680px wide. */
+.split > *{ min-width:0; }
+.split table{ min-width:0; }
 .kicker-list{ display:flex; flex-direction:column; gap:16px; }
 .kicker-list li{ display:flex; gap:14px; font-size:.94rem; color:var(--charcoal); }
 .kicker-list li::before{ content:"→"; color:var(--gold); font-weight:700; flex:none; }
