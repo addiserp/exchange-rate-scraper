@@ -140,9 +140,18 @@ def scrape_black_market(page):
     numbers are rendered by JS after load, so this needs the same
     headless-browser-plus-wait approach as scrape_bank()."""
     try:
-        page.goto(BLACK_MARKET_URL, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
-        page.wait_for_timeout(WAIT_SECONDS * 1000)
-        text = page.inner_text("body")
+        text = ""
+        for _attempt in range(2):  # the live board sometimes renders late; retry once
+            page.goto(BLACK_MARKET_URL, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
+            try:
+                # wait for the live "1 USD = N ETB" line instead of a fixed sleep
+                page.wait_for_function("document.body.innerText.includes('1 USD =')", timeout=25_000)
+            except Exception:  # noqa: BLE001
+                pass
+            page.wait_for_timeout(1500)
+            text = page.inner_text("body")
+            if BLACK_MARKET_RATE_RE.search(text):
+                break
     except Exception as exc:  # noqa: BLE001
         return {
             "source": BLACK_MARKET_SOURCE_NAME, "url": BLACK_MARKET_URL, "status": "unavailable",
