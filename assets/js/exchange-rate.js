@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', function () {
   var statusEl = document.getElementById('rate-status');
   var liveCountEl = document.getElementById('rate-live-count');
   var sortSelect = document.getElementById('rate-sort');
+  var bureauTbody = document.getElementById('bureau-tbody');
+  var bureauSort = document.getElementById('bureau-sort');
+  var bureauCountEl = document.getElementById('bureau-live-count');
   var blackMarketRatesEl = document.getElementById('black-market-rates');
 
   if (!tbody) return;
@@ -120,6 +123,55 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
+  // Forex bureaus: "Buy" = what the bureau pays you per USD (highest is best
+  // if you're selling USD); "Sell" = what it charges you (lowest is best if
+  // you're buying USD). Bureaus without a live rate always sort last.
+  function renderBureaus(list) {
+    if (!bureauTbody) return;
+    var mode = bureauSort ? bureauSort.value : 'usd-buy';
+    var rows = (list || []).slice();
+    function live(b) { return b.status === 'ok' && b.usd; }
+    rows.sort(function (a, b) {
+      if (mode === 'name') return a.name.localeCompare(b.name);
+      var la = live(a), lb = live(b);
+      if (la && !lb) return -1;
+      if (!la && lb) return 1;
+      if (!la && !lb) return a.name.localeCompare(b.name);
+      return mode === 'usd-sell' ? a.usd.sell - b.usd.sell : b.usd.buy - a.usd.buy;
+    });
+    bureauTbody.innerHTML = '';
+    var liveN = 0;
+    if (!rows.length) {
+      bureauTbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:var(--slate);padding:34px 18px;">Forex bureau rates aren\u2019t available yet.</td></tr>';
+    }
+    rows.forEach(function (b) {
+      if (live(b)) liveN++;
+      var tr = document.createElement('tr');
+      if (!live(b) && b.reason) tr.title = b.reason;
+      var nameTd = document.createElement('td');
+      nameTd.textContent = b.name;
+      tr.appendChild(nameTd);
+      var phoneTd = document.createElement('td');
+      if (b.phone) {
+        var a = document.createElement('a');
+        a.href = 'tel:+251' + b.phone.replace(/\D/g, '').replace(/^0/, '');
+        a.textContent = b.phone;
+        phoneTd.appendChild(a);
+      } else {
+        phoneTd.textContent = '—';
+      }
+      tr.appendChild(phoneTd);
+      ['buy', 'sell'].forEach(function (k) {
+        var td = document.createElement('td');
+        td.className = 'num';
+        td.textContent = live(b) ? fmt(b.usd[k]) : '—';
+        tr.appendChild(td);
+      });
+      bureauTbody.appendChild(tr);
+    });
+    if (bureauCountEl) bureauCountEl.textContent = liveN + ' of ' + rows.length + ' bureaus live';
+  }
+
   function render(data) {
     lastData = data;
     var sortMode = sortSelect ? sortSelect.value : 'usd-buy';
@@ -146,6 +198,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     renderBlackMarket(data.black_market);
+    renderBureaus(data.forex_bureaus);
   }
 
   function setStatus(msg, isError) {
@@ -189,6 +242,12 @@ document.addEventListener('DOMContentLoaded', function () {
   if (refreshBtn) {
     refreshBtn.addEventListener('click', function () {
       load(true);
+    });
+  }
+
+  if (bureauSort) {
+    bureauSort.addEventListener('change', function () {
+      if (lastData) renderBureaus(lastData.forex_bureaus);
     });
   }
 

@@ -44,26 +44,26 @@ define('USER_AGENT', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.
 // server at all, we just show a direct link.
 $BANKS = [
   ['name' => 'Abay Bank S.C', 'swift' => 'ABAYETAA',                         'url' => 'https://exchange.addisfortune.news/bank/abay-bank-sc'],
-  ['name' => 'Addis International Bank S.C', 'swift' => 'ABSCETAA',          'url' => 'https://www.addisbanksc.com/'],
+  ['name' => 'Addis International Bank S.C', 'swift' => 'ABSCETAA',          'url' => 'https://exchange.addisfortune.news/bank/addis-bank-sc-1'],
   ['name' => 'Ahadu Bank S.C', 'swift' => 'AHUUETAA',                         'url' => 'https://exchange.addisfortune.news/bank/ahadu-bank-sc'],
   ['name' => 'Amhara Bank S.C', 'swift' => 'AMHRETAA',                        'url' => 'https://www.amharabank.com/daily-exchange-rate/', 'skip' => true, 'reason' => 'Rates are loaded by JavaScript after the page loads, so a server can\'t read them'],
-  ['name' => 'Awash Bank S.C', 'swift' => 'AWINETAA',                         'url' => 'https://awashbank.com/exchange-historical/', 'skip' => true, 'reason' => 'Rates are loaded by JavaScript after the page loads, so a server can\'t read them'],
+  ['name' => 'Awash Bank S.C', 'swift' => 'AWINETAA',                         'url' => 'https://exchange.addisfortune.news/bank/awash-bank-sc'],
   ['name' => 'Bank of Abyssinia', 'swift' => 'ABYSETAA',                      'url' => 'https://www.bankofabyssinia.com/exchange-rate-2/'],
-  ['name' => 'Berhan Bank S.C.', 'swift' => 'BERHETAA',                       'url' => 'https://berhanbanksc.com/exchange-rates/'],
+  ['name' => 'Berhan Bank S.C.', 'swift' => 'BERHETAA',                       'url' => 'https://exchange.addisfortune.news/bank/berhan-international-bank-sc'],
   ['name' => 'Bunna International Bank', 'swift' => 'BUNAETAA',               'url' => 'https://bunnabanksc.com/foreign-exchange/'],
-  ['name' => 'Commercial Bank of Ethiopia', 'swift' => 'CBETETAA',            'url' => 'https://combanketh.et/exchange-rates?srcPage=home', 'skip' => true, 'reason' => 'Rates are loaded by JavaScript after the page loads, so a server can\'t read them'],
+  ['name' => 'Commercial Bank of Ethiopia', 'swift' => 'CBETETAA',            'url' => 'https://exchange.addisfortune.news/bank/commercial-bank-of-ethiopia'],
   ['name' => 'Cooperative Bank of Oromia S.C.', 'swift' => 'CBORETAA',        'url' => 'https://coopbankoromia.com.et/daily-exchange-rates/'],
   ['name' => 'Dashen Bank S.C', 'swift' => 'DASHETAA',                        'url' => 'https://dashenbanksc.com/daily-exchange-rate/'],
-  ['name' => 'Enat Bank S.C', 'swift' => 'ENATETAA',                          'url' => 'https://www.enatbanksc.com/'],
-  ['name' => 'Gadaa Bank S.C', 'swift' => 'GDAAETAA',                         'url' => 'https://gadaabank.com.et/foreign-exchange-remittances/'],
-  ['name' => 'Global Bank Ethiopia S.C', 'swift' => 'DEGAETAA',               'url' => 'https://www.globalbankethiopia.com/remittance-forex/'],
+  ['name' => 'Enat Bank S.C', 'swift' => 'ENATETAA',                          'url' => 'https://exchange.addisfortune.news/bank/enat-bank-sc'],
+  ['name' => 'Gadaa Bank S.C', 'swift' => 'GDAAETAA',                         'url' => 'https://exchange.addisfortune.news/bank/gadaa-bank-sc'],
+  ['name' => 'Global Bank Ethiopia S.C', 'swift' => 'DEGAETAA',               'url' => 'https://exchange.addisfortune.news/bank/global-bank-ethiopia-sc'],
   ['name' => 'Hibret Bank S.C. (United Bank)', 'swift' => 'UNTDETAA',         'url' => 'https://www.hibretbank.com.et/hibret-banks-daily-exchange-rate/'],
   ['name' => 'Lion International Bank S.C', 'swift' => 'LIBSETAA',            'url' => 'https://exchange.addisfortune.news/bank/anbesa-bank-1'],
-  ['name' => 'National Bank of Ethiopia', 'swift' => 'NBETETAA',              'url' => 'https://nbe.gov.et/'],
+  ['name' => 'National Bank of Ethiopia', 'swift' => 'NBETETAA',              'url' => 'https://exchange.addisfortune.news/bank/national-bank-of-ethiopia'],
   ['name' => 'Nib International Bank S.C', 'swift' => 'NIBIETAA',             'url' => 'https://www.nibbanksc.com/exchange-rate/'],
-  ['name' => 'Oromia International Bank S.C', 'swift' => 'ORIRETAA',          'url' => 'https://oromiabank.com/exchange-rates/', 'skip' => true, 'reason' => 'This bank\'s site blocks automated access (robots.txt)'],
+  ['name' => 'Oromia International Bank S.C', 'swift' => 'ORIRETAA',          'url' => 'https://exchange.addisfortune.news/bank/oromia-international-bank-sc'],
   ['name' => 'Wegagen Bank S.C', 'swift' => 'WEGAETAA',                       'url' => 'https://www.wegagen.com/exchange-rate-cash-notes/'],
-  ['name' => 'Zemen Bank S.C', 'swift' => 'ZEMEETAA',                         'url' => 'https://zemenbank.com/exchange-rates/'],
+  ['name' => 'Zemen Bank S.C', 'swift' => 'ZEMEETAA',                         'url' => 'https://exchange.addisfortune.news/bank/zemen-bank-sc'],
 ];
 
 // ---------- cache ----------
@@ -131,6 +131,9 @@ if (!$force && $existingCache !== null) {
             'range_high'       => null,
             'daily_change_pct' => null,
         ];
+    }
+    if (!isset($existingCache['forex_bureaus']) || !is_array($existingCache['forex_bureaus'])) {
+        $existingCache['forex_bureaus'] = [];
     }
     echo json_encode($existingCache);
     exit;
@@ -339,6 +342,8 @@ $result = [
     'source'         => 'curl-quick-refresh',
     'banks'          => $out,
     'black_market'   => $blackMarket,
+    // Forex bureaus come from a JS-rendered source: carry over the last Playwright scrape.
+    'forex_bureaus'  => is_array($existingCache['forex_bureaus'] ?? null) ? $existingCache['forex_bureaus'] : [],
 ];
 
 @mkdir(dirname(CACHE_FILE), 0755, true);

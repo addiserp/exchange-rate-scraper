@@ -21,30 +21,28 @@ PAGE_TIMEOUT_MS = 25_000
 
 BANKS = [
     {"name": "Abay Bank S.C", "swift": "ABAYETAA", "url": "https://exchange.addisfortune.news/bank/abay-bank-sc"},
-    {"name": "Addis International Bank S.C", "swift": "ABSCETAA", "url": "https://www.addisbanksc.com/"},
+    {"name": "Addis International Bank S.C", "swift": "ABSCETAA", "url": "https://exchange.addisfortune.news/bank/addis-bank-sc-1"},
     {"name": "Ahadu Bank S.C", "swift": "AHUUETAA", "url": "https://exchange.addisfortune.news/bank/ahadu-bank-sc"},
     {"name": "Amhara Bank S.C", "swift": "AMHRETAA", "url": "https://www.amharabank.com/daily-exchange-rate/"},
-    {"name": "Awash Bank S.C", "swift": "AWINETAA", "url": "https://awashbank.com/exchange-historical/"},
+    {"name": "Awash Bank S.C", "swift": "AWINETAA", "url": "https://exchange.addisfortune.news/bank/awash-bank-sc"},
     {"name": "Bank of Abyssinia", "swift": "ABYSETAA", "url": "https://www.bankofabyssinia.com/exchange-rate-2/"},
-    {"name": "Berhan Bank S.C.", "swift": "BERHETAA", "url": "https://berhanbanksc.com/exchange-rates/"},
+    {"name": "Berhan Bank S.C.", "swift": "BERHETAA", "url": "https://exchange.addisfortune.news/bank/berhan-international-bank-sc"},
     {"name": "Bunna International Bank", "swift": "BUNAETAA", "url": "https://bunnabanksc.com/foreign-exchange/"},
-    {"name": "Commercial Bank of Ethiopia", "swift": "CBETETAA", "url": "https://combanketh.et/exchange-rates?srcPage=home"},
+    {"name": "Commercial Bank of Ethiopia", "swift": "CBETETAA", "url": "https://exchange.addisfortune.news/bank/commercial-bank-of-ethiopia"},
     {"name": "Cooperative Bank of Oromia S.C.", "swift": "CBORETAA", "url": "https://coopbankoromia.com.et/daily-exchange-rates/"},
     {"name": "Dashen Bank S.C", "swift": "DASHETAA", "url": "https://dashenbanksc.com/daily-exchange-rate/"},
-    {"name": "Enat Bank S.C", "swift": "ENATETAA", "url": "https://www.enatbanksc.com/"},
-    {"name": "Gadaa Bank S.C", "swift": "GDAAETAA", "url": "https://gadaabank.com.et/foreign-exchange-remittances/"},
-    {"name": "Global Bank Ethiopia S.C", "swift": "DEGAETAA", "url": "https://www.globalbankethiopia.com/remittance-forex/"},
+    {"name": "Enat Bank S.C", "swift": "ENATETAA", "url": "https://exchange.addisfortune.news/bank/enat-bank-sc"},
+    {"name": "Gadaa Bank S.C", "swift": "GDAAETAA", "url": "https://exchange.addisfortune.news/bank/gadaa-bank-sc"},
+    {"name": "Global Bank Ethiopia S.C", "swift": "DEGAETAA", "url": "https://exchange.addisfortune.news/bank/global-bank-ethiopia-sc"},
     {"name": "Hibret Bank S.C. (United Bank)", "swift": "UNTDETAA", "url": "https://www.hibretbank.com.et/hibret-banks-daily-exchange-rate/"},
     {"name": "Lion International Bank S.C", "swift": "LIBSETAA", "url": "https://exchange.addisfortune.news/bank/anbesa-bank-1"},
-    {"name": "National Bank of Ethiopia", "swift": "NBETETAA", "url": "https://nbe.gov.et/"},
+    {"name": "National Bank of Ethiopia", "swift": "NBETETAA", "url": "https://exchange.addisfortune.news/bank/national-bank-of-ethiopia"},
     {"name": "Nib International Bank S.C", "swift": "NIBIETAA", "url": "https://www.nibbanksc.com/exchange-rate/"},
-    # Oromia International Bank's site disallows automated access via
-    # robots.txt — we don't fetch it at all, out of respect for that,
-    # same as api/exchange-rates.php.
-    {"name": "Oromia International Bank S.C", "swift": "ORIRETAA", "url": "https://oromiabank.com/exchange-rates/",
-     "skip": True, "reason": "This bank's site blocks automated access (robots.txt)"},
+    # Several banks publish rates only as images/JS that can't be read, so
+    # those use the Addis Fortune+ comparison site (robots.txt allows it).
+    {"name": "Oromia International Bank S.C", "swift": "ORIRETAA", "url": "https://exchange.addisfortune.news/bank/oromia-international-bank-sc"},
     {"name": "Wegagen Bank S.C", "swift": "WEGAETAA", "url": "https://www.wegagen.com/exchange-rate-cash-notes/"},
-    {"name": "Zemen Bank S.C", "swift": "ZEMEETAA", "url": "https://zemenbank.com/exchange-rates/"},
+    {"name": "Zemen Bank S.C", "swift": "ZEMEETAA", "url": "https://exchange.addisfortune.news/bank/zemen-bank-sc"},
 ]
 
 NUM_RE = re.compile(r"^-?\d+(\.\d{2,4})?$")
@@ -174,6 +172,63 @@ def scrape_black_market(page):
     }
 
 
+# NBE-licensed independent forex bureaus (https://nbe.gov.et/independent-forex-bureaus/).
+# Phones come from the NBE list; rates come from ethiotrade.org/forex-offices,
+# which collects the rates the bureaus publish (robots.txt allows crawling).
+# "key" is matched against the name ethiotrade.org uses.
+FOREX_BUREAUS = [
+    {"name": "Ammann Forex Bureau", "key": "ammann", "phone": "0911-22-01-98"},
+    {"name": "AYOTAN Forex Bureau", "key": "ayotan", "phone": "0930-25-12-36"},
+    {"name": "DBH Forex Bureau", "key": "dbh", "phone": "0913-06-48-30"},
+    {"name": "Ethio Forex Bureau", "key": "ethio", "phone": "0911-23-39-88"},
+    {"name": "FOUR X Forex Bureau", "key": "four x", "phone": "0974-55-49-50"},
+    {"name": "Global Forex Bureau", "key": "global", "phone": "0911-22-32-68"},
+    {"name": "Grace General Forex Bureau", "key": "grace general", "phone": "0969-78-78-78"},
+    {"name": "Haron Forex Bureau", "key": "haron", "phone": "0911-20-72-82"},
+    {"name": "Robust Forex Bureau", "key": "robust", "phone": "0911-24-68-47"},
+    {"name": "Rooha Forex Bureau", "key": "rooha", "phone": "0915-99-00-07"},
+    {"name": "Saba Forex Bureau", "key": "saba", "phone": None},
+    {"name": "Sheba Forex Bureau", "key": "sheba", "phone": "0911-21-39-40"},
+    {"name": "Sibrat Forex Bureau", "key": "sibrat", "phone": "0917-55-16-11"},
+    {"name": "Taypay Forex Bureau", "key": "taypay", "phone": "0915-75-20-67"},
+    {"name": "Walia Forex Bureau", "key": "walia", "phone": "0967-21-77-77"},
+    {"name": "Yoga Forex Bureau", "key": "yoga", "phone": "0982-77-77-70"},
+]
+FOREX_BUREAU_URL = "https://ethiotrade.org/forex-offices"
+BUREAU_ROW_RE = re.compile(r"([A-Za-z][A-Za-z .&-]*? Forex Bureau)\s+(\d{2,3}\.\d{2})\s+(\d{2,3}\.\d{2})")
+
+
+def scrape_forex_bureaus(page):
+    found = {}
+    reason = None
+    try:
+        page.goto(FOREX_BUREAU_URL, timeout=PAGE_TIMEOUT_MS, wait_until="domcontentloaded")
+        page.wait_for_timeout(WAIT_SECONDS * 1000)
+        try:  # the page lists 10 by default; expand to all
+            page.get_by_text("Show all", exact=False).first.click(timeout=3000)
+            page.wait_for_timeout(1500)
+        except Exception:  # noqa: BLE001
+            pass
+        text = page.inner_text("body")
+        for name, buy, sell in BUREAU_ROW_RE.findall(text):
+            key = name.lower().replace(" forex bureau", "").strip()
+            b, s_ = float(buy), float(sell)
+            if 1 < b < 100000 and 1 < s_ < 100000:
+                found.setdefault(key, {"buy": b, "sell": s_})
+    except Exception as exc:  # noqa: BLE001
+        reason = f"Could not load the page ({type(exc).__name__})"
+
+    out = []
+    for bureau in FOREX_BUREAUS:
+        usd = found.get(bureau["key"])
+        item = {"name": bureau["name"], "phone": bureau["phone"], "url": FOREX_BUREAU_URL,
+                "status": "ok" if usd else "unavailable", "usd": usd}
+        if not usd:
+            item["reason"] = reason or "No published rate found"
+        out.append(item)
+    return out
+
+
 def main():
     started = time.time()
     results = []
@@ -191,6 +246,8 @@ def main():
 
         print("Scraping black-market USD/ETB rate...", file=sys.stderr)
         black_market = scrape_black_market(page)
+        print("Scraping forex bureaus...", file=sys.stderr)
+        forex_bureaus = scrape_forex_bureaus(page)
         browser.close()
 
     now = datetime.now(timezone.utc)
@@ -201,6 +258,7 @@ def main():
         "source": "playwright",
         "banks": results,
         "black_market": black_market,
+        "forex_bureaus": forex_bureaus,
     }
 
     CACHE_FILE.parent.mkdir(parents=True, exist_ok=True)

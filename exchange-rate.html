@@ -153,6 +153,38 @@
       </table>
     </div>
 
+    <h2 style="margin:48px 0 6px;">Independent forex bureaus</h2>
+    <p style="color:var(--slate);margin:0 0 14px;">NBE-licensed private forex bureaus — USD / ETB cash rates and contact phone numbers. Rates are collected from <a href="https://ethiotrade.org/forex-offices" target="_blank" rel="noopener">ethiotrade.org</a>; always call the bureau to confirm before you go.</p>
+    <div class="rate-bar">
+      <div class="meta"><span class="live-count" id="bureau-live-count"></span></div>
+      <div class="sort-control">
+        <label for="bureau-sort">Sort by</label>
+        <select id="bureau-sort">
+          <option value="usd-buy" selected>USD Buy (highest first)</option>
+          <option value="usd-sell">USD Sell (lowest first)</option>
+          <option value="name">Name (A–Z)</option>
+        </select>
+      </div>
+    </div>
+    <div class="table-wrap" data-reveal>
+      <table class="rates">
+        <thead>
+          <tr>
+            <th rowspan="2" style="vertical-align:bottom;">Forex bureau</th>
+            <th rowspan="2" style="vertical-align:bottom;">Mobile phone</th>
+            <th colspan="2" class="curr-group">USD / ETB</th>
+          </tr>
+          <tr>
+            <th class="num">Buy</th>
+            <th class="num">Sell</th>
+          </tr>
+        </thead>
+        <tbody id="bureau-tbody">
+          <tr><td colspan="4" style="text-align:center;color:var(--slate);padding:34px 18px;">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
     <div class="disclaimer">
       <strong>How this works:</strong> most Ethiopian bank sites load their rates with JavaScript a few seconds after the page itself finishes loading, so a background script periodically opens each bank's page in a real (headless) browser, waits for the numbers to appear, and saves them here — that's what actually keeps this table current. "Refresh now" additionally re-checks, instantly, the few banks whose sites show a rate without needing that wait; it never overwrites a good number with "Unavailable" for the rest. A dash (—) means that bank's rate wasn't available at the last check. <strong>These figures, including SWIFT/BIC codes, are informational only</strong> — always confirm the exact rate and code with the bank directly before making a transaction or wire transfer.
     </div>
@@ -224,6 +256,6 @@
 <!-- .htaccess caches .js for 1 month (ExpiresByType application/javascript) with
      no filename hashing, so bump ?v=N any time exchange-rate.js changes, or
      browsers/caching proxies will keep serving the old file for weeks. -->
-<script src="assets/js/exchange-rate.js?v=4"></script>
+<script src="assets/js/exchange-rate.js?v=5"></script>
 </body>
 </html>
