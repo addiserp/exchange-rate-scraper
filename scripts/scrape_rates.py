@@ -36,7 +36,6 @@ BANKS = [
     {"name": "Global Bank Ethiopia S.C", "swift": "DEGAETAA", "url": "https://exchange.addisfortune.news/bank/global-bank-ethiopia-sc"},
     {"name": "Hibret Bank S.C. (United Bank)", "swift": "UNTDETAA", "url": "https://www.hibretbank.com.et/hibret-banks-daily-exchange-rate/"},
     {"name": "Lion International Bank S.C", "swift": "LIBSETAA", "url": "https://exchange.addisfortune.news/bank/anbesa-bank-1"},
-    {"name": "National Bank of Ethiopia", "swift": "NBETETAA", "url": "https://exchange.addisfortune.news/bank/national-bank-of-ethiopia"},
     {"name": "Nib International Bank S.C", "swift": "NIBIETAA", "url": "https://www.nibbanksc.com/exchange-rate/"},
     # Several banks publish rates only as images/JS that can't be read, so
     # those use the Addis Fortune+ comparison site (robots.txt allows it).

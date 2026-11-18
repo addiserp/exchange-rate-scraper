@@ -59,7 +59,6 @@ $BANKS = [
   ['name' => 'Global Bank Ethiopia S.C', 'swift' => 'DEGAETAA',               'url' => 'https://exchange.addisfortune.news/bank/global-bank-ethiopia-sc'],
   ['name' => 'Hibret Bank S.C. (United Bank)', 'swift' => 'UNTDETAA',         'url' => 'https://www.hibretbank.com.et/hibret-banks-daily-exchange-rate/'],
   ['name' => 'Lion International Bank S.C', 'swift' => 'LIBSETAA',            'url' => 'https://exchange.addisfortune.news/bank/anbesa-bank-1'],
-  ['name' => 'National Bank of Ethiopia', 'swift' => 'NBETETAA',              'url' => 'https://exchange.addisfortune.news/bank/national-bank-of-ethiopia'],
   ['name' => 'Nib International Bank S.C', 'swift' => 'NIBIETAA',             'url' => 'https://www.nibbanksc.com/exchange-rate/'],
   ['name' => 'Oromia International Bank S.C', 'swift' => 'ORIRETAA',          'url' => 'https://exchange.addisfortune.news/bank/oromia-international-bank-sc'],
   ['name' => 'Wegagen Bank S.C', 'swift' => 'WEGAETAA',                       'url' => 'https://www.wegagen.com/exchange-rate-cash-notes/'],

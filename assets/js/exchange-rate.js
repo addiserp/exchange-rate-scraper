@@ -189,6 +189,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   function render(data) {
+    // NBE only deals with banks, not the public — never show or compare it.
+    data.banks = (data.banks || []).filter(function (b) { return !/national bank of ethiopia/i.test(b.name); });
     lastData = data;
     var sortMode = sortSelect ? sortSelect.value : 'usd-buy';
     var banks = sortBanks(data.banks || [], sortMode);
