@@ -1,1 +1,2 @@
-https://exchange.addisfortune.news/banks|200
+https://data.stockmarket.et/exchange-rates|7000
+https://allratestoday.com/exchange-rate-api-ethiopia/|3500
