@@ -11,4 +11,5 @@ jobs:
       - run: |
           pip install playwright
           python -m playwright install --with-deps chromium
+      - run: python scripts/debug_banks.py
       - run: python scripts/debug_fetch.py
