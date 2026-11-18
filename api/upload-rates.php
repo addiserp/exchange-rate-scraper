@@ -72,6 +72,33 @@ if (json_last_error() !== JSON_ERROR_NONE || !is_array($decoded) || !isset($deco
     respond(400, ['error' => 'Body is not valid rate-cache JSON (' . json_last_error_msg() . ')']);
 }
 
+// Never let a flaky scrape replace a good number with "Unavailable":
+// for any bank / bureau / black-market entry that failed this time but
+// had a good value in the previous cache, keep the previous one.
+$prev = is_file(CACHE_FILE) ? json_decode((string)@file_get_contents(CACHE_FILE), true) : null;
+if (is_array($prev)) {
+    $keepGood = function (array $new, $old) {
+        if (!is_array($old)) return $new;
+        $byName = [];
+        foreach ($old as $o) { if (is_array($o) && isset($o['name'])) $byName[$o['name']] = $o; }
+        foreach ($new as $i => $n) {
+            if (($n['status'] ?? '') !== 'ok' && isset($byName[$n['name'] ?? ''])
+                && ($byName[$n['name']]['status'] ?? '') === 'ok') {
+                $new[$i] = $byName[$n['name']];
+            }
+        }
+        return $new;
+    };
+    $decoded['banks'] = $keepGood($decoded['banks'], $prev['banks'] ?? null);
+    if (isset($decoded['forex_bureaus']) && is_array($decoded['forex_bureaus'])) {
+        $decoded['forex_bureaus'] = $keepGood($decoded['forex_bureaus'], $prev['forex_bureaus'] ?? null);
+    }
+    if ((($decoded['black_market']['status'] ?? '') !== 'ok') && (($prev['black_market']['status'] ?? '') === 'ok')) {
+        $decoded['black_market'] = $prev['black_market'];
+    }
+    $raw = json_encode($decoded);
+}
+
 // Atomic write: write to a temp file in the same directory, then
 // rename() over the real file. rename() is atomic on POSIX
 // filesystems, so a reader (api/exchange-rates.php) can never see a
