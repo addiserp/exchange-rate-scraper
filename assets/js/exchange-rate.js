@@ -75,6 +75,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // USD Buy = what they pay you per USD (highest is best); USD Sell = what
   // they charge you per USD (lowest is best). The black market is a single
   // live rate, so it appears on both rows.
+  // Black market publishes one rate: that is the Buy; Sell = Buy + this spread.
+  var BM_SELL_SPREAD = 3;
+
   function bestOf(list, field, wantHighest) {
     var best = null;
     (list || []).forEach(function (x) {
@@ -114,11 +117,11 @@ document.addEventListener('DOMContentLoaded', function () {
           var extra = '';
           if (bmOk && r.field === 'buy' && bm.daily_change_pct != null) {
             extra = (bm.daily_change_pct >= 0 ? '▲ +' : '▼ ') + Math.abs(bm.daily_change_pct).toFixed(2) + '% today';
-          } else if (bmOk && r.field === 'sell' && bm.range_low != null) {
-            extra = 'range ' + fmt(bm.range_low) + ' – ' + fmt(bm.range_high);
+          } else if (bmOk && r.field === 'sell') {
+            extra = 'buy + ' + BM_SELL_SPREAD + ' ETB';
           }
           cell('bmc-bm', bmOk
-            ? '<span class="bmc-v">' + fmt(bm.rate) + '</span><span class="bmc-who">' + extra + '</span>'
+            ? '<span class="bmc-v">' + fmt(r.field === 'sell' ? bm.rate + BM_SELL_SPREAD : bm.rate) + '</span><span class="bmc-who">' + extra + '</span>'
             : '<span class="bmc-v">—</span><span class="bmc-who">unavailable</span>');
         } else {
           var best = bestOf(c.list, r.field, r.high);
