@@ -92,10 +92,10 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!blackMarketRatesEl) return;
     var bm = data.black_market;
     var bmOk = bm && bm.status === 'ok' && bm.rate != null;
+    // Comparison covers licensed channels only (banks + private bureaus).
     var cols = [
-      { cls: 'bmc-bm', title: 'Black market' },
-      { cls: '', title: 'Private bureaus (best)', list: data.forex_bureaus },
-      { cls: '', title: 'Banks (best)', list: data.banks }
+      { title: 'Private bureaus (best)', list: data.forex_bureaus },
+      { title: 'Banks (best)', list: data.banks }
     ];
     var rows = [
       { label: 'USD Buy', sub: 'highest is best', field: 'buy', high: true },
@@ -110,38 +110,33 @@ document.addEventListener('DOMContentLoaded', function () {
       g.appendChild(d);
     }
     cell('', '');
-    cols.forEach(function (c) { cell('bmc-h ' + c.cls, c.title); });
+    cols.forEach(function (c) { cell('bmc-h', c.title); });
     rows.forEach(function (r) {
       cell('bmc-rowlabel', r.label + '<small>' + r.sub + '</small>');
-      cols.forEach(function (c, i) {
-        if (i === 0) {
-          var extra = '';
-          if (bmOk && r.field === 'buy' && bm.daily_change_pct != null) {
-            extra = (bm.daily_change_pct >= 0 ? '▲ +' : '▼ ') + Math.abs(bm.daily_change_pct).toFixed(2) + '% today';
-          } else if (bmOk && r.field === 'sell') {
-            extra = 'estimated (buy + ' + BM_SELL_SPREAD + ')';
-          }
-          cell('bmc-bm', bmOk
-            ? '<span class="bmc-v">' + fmt(r.field === 'sell' ? bm.rate + BM_SELL_SPREAD : bm.rate) + '</span><span class="bmc-who">' + extra + '</span>'
-            : '<span class="bmc-v">—</span><span class="bmc-who">unavailable</span>');
+      cols.forEach(function (c) {
+        var best = bestOf(c.list, r.field, r.high);
+        if (best) {
+          var who = document.createElement('span');
+          who.textContent = best.name.replace(/ Forex Bureau$/i, '');
+          cell('', '<span class="bmc-v">' + fmt(best.usd[r.field]) + '</span><span class="bmc-who">' + who.innerHTML + '</span>');
         } else {
-          var best = bestOf(c.list, r.field, r.high);
-          if (best) {
-            var who = document.createElement('span');
-            who.textContent = best.name.replace(/ Forex Bureau$/i, '');
-            cell('', '<span class="bmc-v">' + fmt(best.usd[r.field]) + '</span><span class="bmc-who">' + who.innerHTML + '</span>');
-          } else {
-            cell('', '<span class="bmc-v">—</span><span class="bmc-who">unavailable</span>');
-          }
+          cell('', '<span class="bmc-v">—</span><span class="bmc-who">unavailable</span>');
         }
       });
     });
     blackMarketRatesEl.innerHTML = '';
     blackMarketRatesEl.appendChild(g);
 
+    // Black market: reference only, never part of the comparison.
+    var ref = document.createElement('div');
+    ref.className = 'bmc-ref';
+    ref.textContent = bmOk
+      ? 'Reference only — black market: Buy ' + fmt(bm.rate) + ' · Sell ≈ ' + fmt(bm.rate + BM_SELL_SPREAD) + ' (estimated)'
+      : 'Reference only — black market rate unavailable right now';
+    blackMarketRatesEl.appendChild(ref);
+
     // text for the Share button
     var lines = ["USD/ETB best rates today (addiserp.com/exchange-rate)"];
-    if (bmOk) lines.push('Black market: ' + fmt(bm.rate) + ' (est. sell ' + fmt(bm.rate + BM_SELL_SPREAD) + ')');
     var bb = bestOf(data.forex_bureaus, 'buy', true), bs = bestOf(data.forex_bureaus, 'sell', false);
     var kb = bestOf(data.banks, 'buy', true), ks = bestOf(data.banks, 'sell', false);
     if (bb) lines.push('Best bureau buy: ' + fmt(bb.usd.buy) + ' (' + bb.name + ')');
