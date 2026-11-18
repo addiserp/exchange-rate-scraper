@@ -71,56 +71,69 @@ document.addEventListener('DOMContentLoaded', function () {
     return tr;
   }
 
-  function renderBlackMarket(blackMarket) {
+  // Best-rate comparison: black market vs best private bureau vs best bank.
+  // USD Buy = what they pay you per USD (highest is best); USD Sell = what
+  // they charge you per USD (lowest is best). The black market is a single
+  // live rate, so it appears on both rows.
+  function bestOf(list, field, wantHighest) {
+    var best = null;
+    (list || []).forEach(function (x) {
+      if (x.status !== 'ok' || !x.usd || typeof x.usd[field] !== 'number') return;
+      if (!best || (wantHighest ? x.usd[field] > best.usd[field] : x.usd[field] < best.usd[field])) best = x;
+    });
+    return best;
+  }
+
+  function renderBlackMarket(data) {
     if (!blackMarketRatesEl) return;
-    if (!blackMarket || blackMarket.status !== 'ok' || blackMarket.rate == null) {
-      blackMarketRatesEl.textContent = 'Unavailable right now' +
-        (blackMarket && blackMarket.reason ? ' — ' + blackMarket.reason : '.');
-      return;
+    var bm = data.black_market;
+    var bmOk = bm && bm.status === 'ok' && bm.rate != null;
+    var cols = [
+      { cls: 'bmc-bm', title: 'Black market' },
+      { cls: '', title: 'Private bureaus (best)', list: data.forex_bureaus },
+      { cls: '', title: 'Banks (best)', list: data.banks }
+    ];
+    var rows = [
+      { label: 'USD Buy', sub: 'highest is best', field: 'buy', high: true },
+      { label: 'USD Sell', sub: 'lowest is best', field: 'sell', high: false }
+    ];
+    var g = document.createElement('div');
+    g.className = 'bmc-grid';
+    function cell(cls, html) {
+      var d = document.createElement('div');
+      if (cls) d.className = cls;
+      d.innerHTML = html;
+      g.appendChild(d);
     }
+    cell('', '');
+    cols.forEach(function (c) { cell('bmc-h ' + c.cls, c.title); });
+    rows.forEach(function (r) {
+      cell('bmc-rowlabel', r.label + '<small>' + r.sub + '</small>');
+      cols.forEach(function (c, i) {
+        if (i === 0) {
+          var extra = '';
+          if (bmOk && r.field === 'buy' && bm.daily_change_pct != null) {
+            extra = (bm.daily_change_pct >= 0 ? '▲ +' : '▼ ') + Math.abs(bm.daily_change_pct).toFixed(2) + '% today';
+          } else if (bmOk && r.field === 'sell' && bm.range_low != null) {
+            extra = 'range ' + fmt(bm.range_low) + ' – ' + fmt(bm.range_high);
+          }
+          cell('bmc-bm', bmOk
+            ? '<span class="bmc-v">' + fmt(bm.rate) + '</span><span class="bmc-who">' + extra + '</span>'
+            : '<span class="bmc-v">—</span><span class="bmc-who">unavailable</span>');
+        } else {
+          var best = bestOf(c.list, r.field, r.high);
+          if (best) {
+            var who = document.createElement('span');
+            who.textContent = best.name;
+            cell('', '<span class="bmc-v">' + fmt(best.usd[r.field]) + '</span><span class="bmc-who">' + who.innerHTML + '</span>');
+          } else {
+            cell('', '<span class="bmc-v">—</span><span class="bmc-who">unavailable</span>');
+          }
+        }
+      });
+    });
     blackMarketRatesEl.innerHTML = '';
-
-    // Main live rate
-    var rateWrap = document.createElement('div');
-    var rateLabel = document.createElement('span');
-    rateLabel.className = 'bmc-figure-label';
-    rateLabel.textContent = 'Live Rate';
-    var rateFigure = document.createElement('div');
-    rateFigure.className = 'bmc-figure';
-    rateFigure.textContent = fmt(blackMarket.rate) + ' ETB';
-    rateWrap.appendChild(rateLabel);
-    rateWrap.appendChild(rateFigure);
-    blackMarketRatesEl.appendChild(rateWrap);
-
-    // 24h range
-    if (blackMarket.range_low != null && blackMarket.range_high != null) {
-      var rangeWrap = document.createElement('div');
-      var rangeLabel = document.createElement('span');
-      rangeLabel.className = 'bmc-figure-label';
-      rangeLabel.textContent = "Today's Range";
-      var rangeFigure = document.createElement('div');
-      rangeFigure.className = 'bmc-figure';
-      rangeFigure.style.fontSize = '1rem';
-      rangeFigure.textContent = fmt(blackMarket.range_low) + ' – ' + fmt(blackMarket.range_high);
-      rangeWrap.appendChild(rangeLabel);
-      rangeWrap.appendChild(rangeFigure);
-      blackMarketRatesEl.appendChild(rangeWrap);
-    }
-
-    // Daily % change
-    if (blackMarket.daily_change_pct != null) {
-      var changeWrap = document.createElement('div');
-      var changeLabel = document.createElement('span');
-      changeLabel.className = 'bmc-figure-label';
-      changeLabel.textContent = 'Daily';
-      var changeFigure = document.createElement('div');
-      var pct = blackMarket.daily_change_pct;
-      changeFigure.className = 'bmc-change ' + (pct >= 0 ? 'up' : 'down');
-      changeFigure.textContent = (pct >= 0 ? '▲ +' : '▼ ') + pct.toFixed(2) + '%';
-      changeWrap.appendChild(changeLabel);
-      changeWrap.appendChild(changeFigure);
-      blackMarketRatesEl.appendChild(changeWrap);
-    }
+    blackMarketRatesEl.appendChild(g);
   }
 
   // Forex bureaus: "Buy" = what the bureau pays you per USD (highest is best
@@ -197,8 +210,8 @@ document.addEventListener('DOMContentLoaded', function () {
       updatedEl.textContent = (data.from_cache ? 'Rates as of ' : 'Just refreshed — rates as of ') + label;
     }
 
-    renderBlackMarket(data.black_market);
     renderBureaus(data.forex_bureaus);
+    renderBlackMarket(data);
   }
 
   function setStatus(msg, isError) {

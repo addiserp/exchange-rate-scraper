@@ -64,6 +64,16 @@
   .bmc-rates .bmc-change{ font-size:.95rem; font-weight:600; }
   .bmc-rates .bmc-change.up{ color:#7FD99A; }
   .bmc-rates .bmc-change.down{ color:#E79B8A; }
+  .bmc-grid{ display:grid; grid-template-columns:minmax(78px,.8fr) repeat(3,1fr); gap:1px; background:rgba(255,255,255,.12); border-radius:4px; overflow:hidden; font-family:var(--mono); }
+  .bmc-rates .bmc-grid{ width:100%; }
+  .bmc-grid > div{ background:var(--ink); padding:10px 12px; }
+  .bmc-grid .bmc-h{ font-size:.68rem; text-transform:uppercase; letter-spacing:.06em; color:#AEB8C8; font-family:var(--body); font-weight:600; }
+  .bmc-grid .bmc-rowlabel{ font-size:.78rem; color:#fff; font-family:var(--body); font-weight:600; }
+  .bmc-grid .bmc-rowlabel small{ display:block; color:#AEB8C8; font-weight:400; font-size:.68rem; }
+  .bmc-grid .bmc-v{ font-size:1.25rem; font-weight:600; }
+  .bmc-grid .bmc-who{ display:block; font-size:.68rem; color:#AEB8C8; font-family:var(--body); font-weight:400; margin-top:2px; }
+  .bmc-grid .bmc-bm .bmc-v{ color:var(--gold-l); }
+  @media (max-width:600px){ .bmc-grid > div{ padding:8px 7px; } .bmc-grid .bmc-v{ font-size:.98rem; } .bmc-grid .bmc-h{ font-size:.6rem; } }
   .bmc-note{ font-size:.76rem; color:#AEB8C8; margin-top:10px; }
   .bmc-note a{ color:var(--gold-l); }
 
@@ -111,7 +121,7 @@
   <div class="container">
 
     <div class="black-market-card" id="black-market-card" data-reveal>
-      <div class="bmc-label">USD/ETB — Black Market (Parallel Rate)</div>
+      <div class="bmc-label">USD/ETB — Best rates today</div>
       <div class="bmc-rates" id="black-market-rates">Loading…</div>
     </div>
 
@@ -256,6 +266,6 @@
 <!-- .htaccess caches .js for 1 month (ExpiresByType application/javascript) with
      no filename hashing, so bump ?v=N any time exchange-rate.js changes, or
      browsers/caching proxies will keep serving the old file for weeks. -->
-<script src="assets/js/exchange-rate.js?v=5"></script>
+<script src="assets/js/exchange-rate.js?v=6"></script>
 </body>
 </html>
