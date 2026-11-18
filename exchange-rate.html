@@ -75,6 +75,8 @@
   .bmc-grid .bmc-bm .bmc-v{ color:var(--gold-l); }
   @media (max-width:600px){ .bmc-grid > div{ padding:8px 7px; } .bmc-grid .bmc-v{ font-size:.98rem; } .bmc-grid .bmc-h{ font-size:.6rem; } }
   .bmc-note{ font-size:.76rem; color:#AEB8C8; margin-top:10px; }
+  .bmc-share{ background:none; border:1px solid var(--gold-l); color:var(--gold-l); border-radius:4px; padding:2px 10px; font-size:.76rem; cursor:pointer; margin-left:6px; }
+  .rate-footnote{ font-size:.8rem; color:var(--slate); margin:14px 0 0; }
   .bmc-note a{ color:var(--gold-l); }
 
   .sort-control{ display:flex; align-items:center; gap:8px; }
@@ -123,6 +125,7 @@
     <div class="black-market-card" id="black-market-card" data-reveal>
       <div class="bmc-label">USD/ETB — Best rates today</div>
       <div class="bmc-rates" id="black-market-rates">Loading…</div>
+      <div class="bmc-note">Black market is an unofficial reference rate (<a href="https://ethioblackmarket.com/" target="_blank" rel="noopener">ethioblackmarket.com</a>); its Sell is an estimate (Buy + 3 ETB), not a quoted rate. <button type="button" id="rate-share" class="bmc-share">Share today's rates</button></div>
     </div>
 
     <div class="rate-bar">
@@ -195,6 +198,8 @@
       </table>
     </div>
 
+    <p class="rate-footnote">Sources: bank websites and <a href="https://exchange.addisfortune.news/" target="_blank" rel="noopener">Addis Fortune+</a> (banks), <a href="https://ethiotrade.org/forex-offices" target="_blank" rel="noopener">ethiotrade.org</a> (forex bureaus), <a href="https://ethioblackmarket.com/" target="_blank" rel="noopener">ethioblackmarket.com</a> (black market). Informational only — confirm the exact rate with the bank or bureau before you transact.</p>
+
   </div>
 </section>
 
@@ -262,6 +267,6 @@
 <!-- .htaccess caches .js for 1 month (ExpiresByType application/javascript) with
      no filename hashing, so bump ?v=N any time exchange-rate.js changes, or
      browsers/caching proxies will keep serving the old file for weeks. -->
-<script src="assets/js/exchange-rate.js?v=8"></script>
+<script src="assets/js/exchange-rate.js?v=9"></script>
 </body>
 </html>
