@@ -121,14 +121,20 @@ p{ margin:0 0 1em; color:var(--slate); }
 .nav-toggle span{ display:block; width:24px; height:2px; background:var(--ink); margin:5px 0; }
 
 @media (max-width:880px){
+  /* Anchored under the header (not position:fixed: the header's
+     backdrop-filter makes fixed children size to the header itself,
+     which left the menu with no background). */
   .nav-links{
-    position:fixed; inset:64px 0 0 0; background:var(--paper);
-    flex-direction:column; align-items:flex-start; padding:24px 28px;
-    gap:22px; transform:translateY(-8px); opacity:0; pointer-events:none;
-    transition:opacity .18s ease, transform .18s ease;
+    position:absolute; top:100%; left:0; right:0;
+    background:#F6F4EF; background:var(--paper);
+    max-height:calc(100vh - 72px); overflow-y:auto;
+    flex-direction:column; align-items:flex-start; padding:24px 28px 32px;
+    gap:22px; transform:translateY(-8px); opacity:0; pointer-events:none; visibility:hidden;
+    transition:opacity .18s ease, transform .18s ease, visibility .18s;
     border-top:1px solid var(--line);
+    box-shadow:0 18px 40px rgba(18,33,59,.18);
   }
-  .nav-links.open{ opacity:1; transform:translateY(0); pointer-events:auto; }
+  .nav-links.open{ opacity:1; transform:translateY(0); pointer-events:auto; visibility:visible; }
   .nav-toggle{ display:block; }
   .nav-cta{ width:100%; text-align:center; }
 }
